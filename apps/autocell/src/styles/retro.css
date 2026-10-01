@@ -1,0 +1,524 @@
+/* ==========================================================================
+   Retro-/Nostalgiemodus – nachgebaut nach dem ursprünglichen Entwurf
+   (AutoCellPrototyp1.pptx): hellgraue Flächen, schwarze Linien, grünes
+   AC-Logo, runde Werkzeugsymbole, rotes Schließen-Kästchen.
+   ========================================================================== */
+
+.app[data-theme='retro'] {
+  --bg0: #e0e0e0;
+  --bg1: #e0e0e0;
+  --bg2: #e0e0e0;
+  --bg-bar: #c0c0c0;
+  --line: #000;
+  --line2: #000;
+  --text: #000;
+  --text2: #000;
+  --muted: #333;
+  --accent: #5cc95c;
+  --accent-ink: #000;
+  --accent-soft: #c8c8c8;
+  --hover: #d0d0d0;
+  --menu-hover: #cfcfcf;
+  --grid-line: #000;
+  --font: Verdana, 'DejaVu Sans', Tahoma, Geneva, sans-serif;
+  --mono: Verdana, 'DejaVu Sans', Tahoma, sans-serif;
+  color-scheme: light;
+  background: #e0e0e0;
+  font-size: 15px;
+}
+
+.app[data-theme='retro'] :focus-visible {
+  outline: 2px dotted #000;
+  outline-offset: 1px;
+}
+
+/* ---------- Kopfzeile ---------- */
+
+.app[data-theme='retro'] .titlebar {
+  height: 40px;
+  padding-left: 0;
+  gap: 0;
+  background: #c0c0c0;
+  border-bottom: 1.5px solid #000;
+  overflow: visible;
+}
+
+.retro-logo {
+  align-self: flex-start;
+  width: 66px;
+  height: 66px;
+  box-sizing: border-box;
+  background: #5ec95e;
+  border: 1px solid #2a6b2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Impact, 'Arial Black', 'DejaVu Sans', sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  letter-spacing: -2px;
+  color: #111;
+  text-shadow: 1px 1px 0 #3c8a3c;
+  position: relative;
+  z-index: 2;
+}
+
+.app[data-theme='retro'] .menubar {
+  gap: 0;
+  margin-left: 20px;
+  align-self: flex-start;
+  height: 40px;
+  align-items: center;
+}
+
+.app[data-theme='retro'] .menu + .menu .menu-button {
+  border-left: 1.5px solid #000;
+}
+
+.app[data-theme='retro'] .menu-button {
+  height: 24px;
+  padding: 0 32px;
+  border-radius: 0;
+  font-size: 18px;
+  background: transparent;
+}
+
+.app[data-theme='retro'] .menu:first-child .menu-button {
+  padding-left: 12px;
+}
+
+.app[data-theme='retro'] .menu-button:hover,
+.app[data-theme='retro'] .menu-button[aria-expanded='true'] {
+  background: transparent;
+  text-decoration: underline;
+}
+
+.app[data-theme='retro'] .menu-dropdown {
+  top: 40px;
+  left: 0;
+  min-width: 230px;
+  padding: 4px 0 4px;
+  background: #e0e0e0;
+  border: 1.5px solid #000;
+  border-top: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.app[data-theme='retro'] .menu-item {
+  margin: 0 26px 0 24px;
+  padding: 7px 8px 6px;
+  border-radius: 0;
+  border-bottom: 1.5px solid #000;
+  font-size: 18px;
+}
+
+.app[data-theme='retro'] .menu-item:last-child {
+  border-bottom: 0;
+}
+
+.app[data-theme='retro'] .menu-item:hover:not(:disabled) {
+  background: #cfcfcf;
+}
+
+.app[data-theme='retro'] .menu-shortcut {
+  display: none;
+}
+
+.app[data-theme='retro'] .menu-check {
+  color: #000;
+}
+
+.app[data-theme='retro'] .menu-sep {
+  display: none;
+}
+
+.app[data-theme='retro'] .titlebar-title {
+  visibility: hidden;
+}
+
+.app[data-theme='retro'] .window-controls {
+  align-self: flex-end;
+  gap: 26px;
+  margin-right: 34px;
+  transform: translateY(15px);
+}
+
+.app[data-theme='retro'] .wc {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid #333;
+  background: #b4b4b4;
+  border-radius: 0;
+  color: #fff;
+}
+
+.app[data-theme='retro'] .wc:disabled {
+  opacity: 1;
+}
+
+.app[data-theme='retro'] .wc:hover {
+  background: #a0a0a0;
+}
+
+.app[data-theme='retro'] .wc-close {
+  background: #ee2222;
+  border-color: #7a0000;
+}
+
+.app[data-theme='retro'] .wc-close:hover {
+  background: #ff3b3b;
+}
+
+/* ---------- Körper ---------- */
+
+.retro-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+  background: #e0e0e0;
+}
+
+.retro-tools {
+  position: absolute;
+  left: 0;
+  top: 88px;
+  bottom: 0;
+  width: 160px;
+  box-sizing: border-box;
+  background: #c0c0c0;
+  border-top: 1.5px solid #000;
+  border-right: 1.5px solid #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  gap: 14px;
+  z-index: 3;
+}
+
+.retro-tools h2 {
+  margin: 0;
+  width: 136px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #000;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.retro-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.retro-round {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #000;
+  background: #c0c0c0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+}
+
+.retro-round:hover {
+  background: #d4d4d4;
+}
+
+.retro-round[aria-pressed='true'] {
+  background: #9a9a9a;
+}
+
+.retro-tempo {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.retro-tempo input {
+  width: 104px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 1.5px solid #333;
+  background: #fff;
+  font-size: 12px;
+  padding: 0 4px;
+  font-style: italic;
+}
+
+.retro-tempo input::placeholder {
+  color: #999;
+}
+
+.retro-tempo button {
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  border: 1.5px solid #333;
+  background: #a8a8a8;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.retro-gen {
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.retro-grid-area {
+  position: absolute;
+  left: 160px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
+  padding: 34px 0 24px 98px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.app[data-theme='retro'] .grid-canvas {
+  border: 0;
+}
+
+.app[data-theme='retro'] .grid-wrap {
+  margin: 0;
+  display: inline-block;
+}
+
+/* ---------- Kontextmenü (zweistufig wie im Entwurf) ---------- */
+
+.app[data-theme='retro'] .ctxmenu {
+  width: 222px;
+  padding: 0;
+  background: #c0c0c0;
+  border: 1.5px solid #555;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.app[data-theme='retro'] .ctxmenu .menu-item {
+  margin: 0 16px 0 14px;
+  padding: 8px 14px 7px;
+  font-size: 18px;
+  border-bottom: 1.5px solid #000;
+}
+
+.app[data-theme='retro'] .ctxmenu > .menu-item:last-of-type {
+  border-bottom: 0;
+}
+
+.app[data-theme='retro'] .ctx-info,
+.app[data-theme='retro'] .ctx-heading,
+.app[data-theme='retro'] .ctxmenu .menu-sep {
+  display: none;
+}
+
+.app[data-theme='retro'] .ctx-sub {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  left: 100%;
+  top: -1.5px;
+  width: 222px;
+  background: #c0c0c0;
+  border: 1.5px solid #555;
+  border-left-width: 1.5px;
+}
+
+.app[data-theme='retro'] .ctx-sub .menu-item:last-child {
+  border-bottom: 0;
+}
+
+.app[data-theme='retro'] .ctx-states-modern {
+  display: none;
+}
+
+.app[data-theme='modern'] .ctx-retro-only {
+  display: none;
+}
+
+/* ---------- Dialoge ---------- */
+
+.app[data-theme='retro'] .dialog-backdrop {
+  background: transparent;
+}
+
+.app[data-theme='retro'] .dialog {
+  border-radius: 0;
+  background: #e0e0e0;
+  border: 1.5px solid #333;
+  box-shadow: none;
+}
+
+.app[data-theme='retro'] .dialog-titlebar {
+  height: 44px;
+  padding-left: 4px;
+  background: #c0c0c0;
+  border-bottom: 1.5px solid #333;
+}
+
+.app[data-theme='retro'] .dialog-titlebar img {
+  width: 36px;
+  height: 36px;
+}
+
+.app[data-theme='retro'] .dialog-title {
+  text-align: center;
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.app[data-theme='retro'] .dialog-title small {
+  display: none;
+}
+
+.app[data-theme='retro'] .dialog-close {
+  width: 30px;
+  height: 30px;
+  align-self: center;
+  margin-right: 12px;
+  background: #ee2222;
+  border: 1.5px solid #7a0000;
+  color: #fff;
+}
+
+.app[data-theme='retro'] .dialog-footer {
+  justify-content: center;
+  border-top: 0;
+  background: #e0e0e0;
+  gap: 8px;
+  padding: 0 18px 18px;
+}
+
+.app[data-theme='retro'] .dialog-footer .spacer {
+  display: none;
+}
+
+.app[data-theme='retro'] .btn {
+  height: 32px;
+  min-width: 150px;
+  border-radius: 0;
+  border: 1.5px solid #333;
+  background: #c0c0c0;
+  color: #000 !important;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.app[data-theme='retro'] .btn:hover:not(:disabled) {
+  background: #cfcfcf;
+}
+
+.app[data-theme='retro'] .input {
+  border-radius: 0;
+  border: 1.5px solid #333;
+  background: #fff;
+  color: #000;
+}
+
+.app[data-theme='retro'] .confirm-text {
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+  padding: 6px 30px 10px;
+}
+
+/* ---------- „Parameter einstellen“ ---------- */
+
+.retro-params {
+  width: 480px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.retro-params .rp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.retro-params .rp-box {
+  width: 30px;
+  height: 26px;
+  text-align: center;
+  padding: 0;
+}
+
+.retro-params .rp-text {
+  width: 160px;
+  height: 28px;
+}
+
+.retro-params .rp-state {
+  border-top: 1.5px solid #000;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.retro-params .rp-state h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.retro-params .rp-indent {
+  padding-left: 30px;
+}
+
+.retro-params .rp-swatch {
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid #333;
+}
+
+.retro-params input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  accent-color: #000;
+}
+
+.retro-params select {
+  height: 28px;
+  border-radius: 0;
+  border: 1.5px solid #333;
+  background: #fff;
+}
+
+.app[data-theme='retro'] .credits img {
+  border-radius: 50%;
+}
+
+.app[data-theme='retro'] .toast {
+  background: #ffffe1;
+  border: 1.5px solid #000;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 #777;
+  color: #000;
+}
+
+.app[data-theme='retro'] .game-msg {
+  background: #c0c0c0;
+  border: 1.5px solid #000;
+  border-radius: 0;
+}
+
+.app[data-theme='retro'] .game {
+  margin: 0;
+}
+
+.app[data-theme='retro'] .quit-screen {
+  color: #333;
+}

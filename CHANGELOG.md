@@ -17,3 +17,11 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
 - Statistikverlauf und Erkennung stabiler bzw. periodischer Muster.
 - Vorlagen: Game of Life, Epidemie (SIR), Verkehrsfluss (Regel 184), Waldbrand,
   Brian’s Brain.
+- Oberfläche (React): Startbildschirm, Hauptfenster mit Tabs, Werkzeugen,
+  Zustandsliste, Live-Verlauf und Statusleiste; Kontextmenü „Zustand setzen“;
+  Dialoge für neue Projekte, Zustände & Regeln, Nachbarschaft & Rand,
+  Projekt & Raster, Statistik, Tastenkürzel und Credits.
+- Nostalgiemodus: Oberfläche des ursprünglichen Entwurfs inklusive
+  „Parameter einstellen“ und Beenden-Dialog.
+- Rückgängig/Wiederherstellen, PNG-Schnappschuss, Druck.
+- Zwei Überraschungen für Neugierige.
