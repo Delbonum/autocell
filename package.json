@@ -1,0 +1,20 @@
+{
+  "name": "autocell",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AutoCell – Simulation zellulärer Automaten (Desktop- und Web-Anwendung)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @autocell/app",
+    "build": "npm run build -w @autocell/core && npm run build -w @autocell/app",
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "version:sync": "node scripts/sync-version.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

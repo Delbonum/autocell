@@ -1,0 +1,22 @@
+{
+  "name": "@autocell/core",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Rechenkern von AutoCell: Modelle, Regeln, Simulation, Statistik und das .acp-Dateiformat",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
