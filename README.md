@@ -61,6 +61,19 @@ npm run desktop:dev    # Desktop-Fenster mit Live-Neuladen
 npm run desktop:build  # autocell.exe und Installer unter apps/autocell/src-tauri/target/release
 ```
 
+### Web-Version
+
+Die Oberfläche läuft ohne Änderungen im Browser. Jeder Push auf `main` baut sie
+über GitHub Actions (`.github/workflows/web.yml`) und veröffentlicht sie auf
+GitHub Pages unter <https://delbonum.github.io/autocell/>. Der Inhalt von
+`apps/autocell/dist` lässt sich ebenso auf jeden anderen statischen Webserver
+legen, auch in ein Unterverzeichnis.
+
+Im Browser öffnet und speichert AutoCell Dateien in Chrome und Edge direkt auf
+der Festplatte, in Firefox und Safari per Hochladen und Herunterladen. Über das
+Installieren-Symbol in der Adressleiste lässt sich die Web-Version wie eine App
+in einem eigenen Fenster starten.
+
 ## Versionsnummer
 
 Die Versionsnummer folgt [SemVer](https://semver.org/lang/de/) und wird **nur**
@@ -77,5 +90,6 @@ npm run version:sync                     # in alle Pakete übertragen
 ## Nächste Schritte
 
 - Desktop-Hülle ausbauen: native Datei-Dialoge, Installationspakete für macOS und Linux
+- Web-Version offline nutzbar machen (Service Worker)
 - Web-Komponente `<autocell-player>` zum Einbinden in Webseiten (Datei › Im Web veröffentlichen)
 - Ausführliches Statistik-Fenster mit Messpunkten einzelner Zellen

@@ -27,3 +27,7 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
 - Zwei Überraschungen für Neugierige.
 - Desktop-Hülle mit Tauri 2: `autocell.exe` und Windows-Installer (NSIS),
   Dateizuordnung für `.acp`.
+- Desktop: im Nostalgiemodus ersetzt die Retro-Titelleiste die von Windows
+  (Verschieben, Minimieren, Maximieren, Schließen).
+- Web-Version auf GitHub Pages, automatisch gebaut bei jedem Push auf `main`;
+  im Browser als App installierbar (Web-Manifest).
