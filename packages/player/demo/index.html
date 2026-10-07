@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AutoCell-Player</title>
+    <link rel="icon" type="image/png" href="../icon.png" />
+    <script type="module" src="./autocell-player.js"></script>
+    <style>
+      :root {
+        --bg: #f7f8f7;
+        --fg: #1d2420;
+        --muted: #5f6b64;
+        --card: #ffffff;
+        --line: #dfe4e1;
+        --code: #eef1ef;
+        --accent: #1f7a3a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121714;
+          --fg: #e3ece5;
+          --muted: #9aa8a0;
+          --card: #1a201c;
+          --line: #2b332e;
+          --code: #1d2420;
+          --accent: #7cf283;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+      h1 { font-size: 28px; margin: 0 0 4px; }
+      h2 { font-size: 19px; margin: 40px 0 8px; }
+      p { margin: 8px 0; }
+      .lead { color: var(--muted); margin-bottom: 24px; }
+      a { color: var(--accent); }
+      code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.9em; }
+      pre {
+        background: var(--code);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        font-size: 13.5px;
+      }
+      .demo {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--card);
+        margin: 12px 0;
+      }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+      table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+      th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+      th { font-weight: 600; }
+      td:first-child { white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>AutoCell-Player</h1>
+      <p class="lead">
+        Zelluläre Automaten aus <a href="../">AutoCell</a> in jede Webseite einbinden –
+        mit einer Zeile Skript und einem HTML-Element.
+      </p>
+
+      <div class="demo">
+        <autocell-player template="gol" cols="96" rows="48" seed="2026" speed="15" controls legend autoplay interactive></autocell-player>
+      </div>
+
+      <h2>Einbinden</h2>
+      <p>Das Skript einmal pro Seite laden:</p>
+      <pre><code>&lt;script type="module" src="https://delbonum.github.io/autocell/player/autocell-player.js"&gt;&lt;/script&gt;</code></pre>
+      <p>Dann ein in AutoCell gespeichertes Projekt abspielen. Die Datei liegt neben der Webseite:</p>
+      <pre><code>&lt;autocell-player src="mein-projekt.acp" controls autoplay&gt;&lt;/autocell-player&gt;</code></pre>
+      <p>
+        Am einfachsten geht es in AutoCell über <strong>Datei › Im Web veröffentlichen</strong>: Dort lässt
+        sich das Projekt auch direkt in den Code-Schnipsel einbetten, ganz ohne separate Datei.
+      </p>
+
+      <h2>Eingebettetes Projekt</h2>
+      <div class="row">
+        <div class="demo">
+          <autocell-player controls loop speed="6">
+            <script type="application/json">
+              {
+                "format": "autocell-project",
+                "formatVersion": 1,
+                "meta": { "name": "Gleiter" },
+                "grid": { "width": 16, "height": 16 },
+                "model": {
+                  "states": [
+                    { "name": "Tot", "color": "#0f1a13",
+                      "rules": [{ "target": 1, "conditions": [{ "type": "neighborCount", "states": [1], "op": "=", "value": 3 }] }] },
+                    { "name": "Lebendig", "color": "#7cf283",
+                      "rules": [{ "target": 0, "combine": "any", "conditions": [
+                        { "type": "neighborCount", "states": [1], "op": "<", "value": 2 },
+                        { "type": "neighborCount", "states": [1], "op": ">", "value": 3 } ] }] }
+                  ],
+                  "neighborhood": { "preset": "moore", "offsets": [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]] },
+                  "boundary": { "type": "torus" }
+                },
+                "simulation": { "stopAtGeneration": 64 },
+                "data": { "cells": { "rle": "0 1 16*0 1 13*0 3*1 221*0" } }
+              }
+            </script>
+          </autocell-player>
+        </div>
+        <div>
+          <p>
+            Ein Gleiter auf einem 16 × 16-Torus. Er wandert 64 Generationen lang, dann beginnt die
+            Wiedergabe dank <code>loop</code> von vorn. Das Projekt steht als JSON direkt im Element:
+          </p>
+          <pre><code>&lt;autocell-player controls loop&gt;
+  &lt;script type="application/json"&gt;
+    { "format": "autocell-project", … }
+  &lt;/script&gt;
+&lt;/autocell-player&gt;</code></pre>
+        </div>
+      </div>
+
+      <h2>Vorlagen</h2>
+      <div class="row">
+        <div class="demo"><autocell-player template="sir" cols="60" rows="40" seed="3" controls legend autoplay></autocell-player></div>
+        <div class="demo"><autocell-player template="fire" cols="60" rows="40" seed="5" controls legend autoplay></autocell-player></div>
+      </div>
+      <p>
+        Mit <code>template</code> startet eine zufällig belegte Vorlage: <code>gol</code>, <code>sir</code>,
+        <code>traffic</code>, <code>fire</code> oder <code>brain</code>.
+      </p>
+
+      <h2>Attribute</h2>
+      <table>
+        <tr><th>Attribut</th><th>Bedeutung</th></tr>
+        <tr><td><code>src</code></td><td>Adresse einer <code>.acp</code>-Datei (oder ihrer JSON-Variante). Liegt sie auf einem anderen Server, muss dieser CORS erlauben.</td></tr>
+        <tr><td><code>template</code></td><td>Vorlage statt Projektdatei, dazu optional <code>cols</code>, <code>rows</code> und <code>seed</code>.</td></tr>
+        <tr><td><code>controls</code></td><td>Steuerleiste mit Start/Pause, Einzelschritt, Zurücksetzen und Generation.</td></tr>
+        <tr><td><code>legend</code></td><td>Zustände mit Farbe und aktueller Anzahl.</td></tr>
+        <tr><td><code>autoplay</code></td><td>Startet automatisch, sobald der Player sichtbar ist. Entfällt, wenn im Betriebssystem „Bewegung reduzieren“ eingestellt ist.</td></tr>
+        <tr><td><code>loop</code></td><td>Beginnt von vorn, wenn eine Stoppbedingung des Projekts erreicht ist.</td></tr>
+        <tr><td><code>interactive</code></td><td>Zellen per Klick oder Ziehen auf den nächsten Zustand setzen.</td></tr>
+        <tr><td><code>speed</code></td><td>Tempo in Generationen pro Sekunde (sonst das im Projekt gespeicherte).</td></tr>
+      </table>
+
+      <h2>Gestaltung und Skripte</h2>
+      <p>
+        Der Player füllt die verfügbare Breite. Über CSS lassen sich die Höhe begrenzen und die Leisten anpassen:
+      </p>
+      <pre><code>autocell-player {
+  --autocell-max-height: 400px;
+  --autocell-bar-bg: #222;
+  --autocell-bar-fg: #fff;
+}
+autocell-player::part(controls) { border-top: 1px solid #444; }</code></pre>
+      <p>
+        Per JavaScript stehen <code>play()</code>, <code>pause()</code>, <code>toggle()</code>, <code>step()</code>,
+        <code>reset()</code> und <code>load(…)</code> bereit, dazu die Eigenschaften <code>playing</code>,
+        <code>generation</code> und <code>projectName</code>. Der Player meldet die Ereignisse <code>load</code>,
+        <code>error</code>, <code>play</code>, <code>pause</code> und <code>end</code>.
+      </p>
+    </main>
+  </body>
+</html>

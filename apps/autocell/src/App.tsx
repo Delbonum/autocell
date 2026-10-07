@@ -46,6 +46,7 @@ import {
   type Theme,
 } from './components/Dialog';
 import { NewProjectDialog, type NewProjectRequest } from './components/dialogs/NewProjectDialog';
+import { PublishDialog } from './components/dialogs/PublishDialog';
 import { RetroParamsDialog } from './components/dialogs/RetroParamsDialog';
 import { SettingsDialog, type SettingsTab } from './components/dialogs/SettingsDialog';
 import { GridCanvas, renderPng } from './components/GridCanvas';
@@ -63,6 +64,7 @@ type DialogState =
   | { type: 'credits' }
   | { type: 'shortcuts' }
   | { type: 'stats' }
+  | { type: 'publish' }
   | { type: 'confirmQuit' }
   | { type: 'confirmClose'; docId: string }
   | { type: 'message'; title: string; text: string };
@@ -500,7 +502,7 @@ export function App() {
             { label: 'Importieren', action: () => void open() },
             { label: 'Exportieren', action: () => doc && void save(doc, true), disabled: !hasDoc },
             { label: 'Drucken', action: () => window.print(), disabled: !hasDoc },
-            { label: 'Publizieren', action: () => showToast('Veröffentlichen im Web folgt in einer der nächsten Versionen.'), disabled: !hasDoc },
+            { label: 'Publizieren', action: () => setDialog({ type: 'publish' }), disabled: !hasDoc },
             { label: 'Beenden', action: requestQuit },
           ],
         },
@@ -531,7 +533,7 @@ export function App() {
           { label: 'Raster als RLE exportieren …', action: () => void exportGrid('rle'), disabled: !hasDoc },
           { label: 'Bild (PNG) exportieren', action: () => void snapshot(), disabled: !hasDoc },
           { label: 'Drucken …', shortcut: 'Strg+P', action: () => window.print(), disabled: !hasDoc },
-          { label: 'Im Web veröffentlichen … (folgt)', disabled: true },
+          { label: 'Im Web veröffentlichen …', action: () => setDialog({ type: 'publish' }), disabled: !hasDoc },
           { separator: true },
           { label: 'Projekt schließen', shortcut: 'Strg+W', action: () => doc && requestClose(doc.id), disabled: !hasDoc },
           { label: 'Beenden', shortcut: 'Alt+F4', action: requestQuit },
@@ -682,6 +684,7 @@ export function App() {
   else if (dialog?.type === 'shortcuts') dialogEl = <ShortcutsDialog onClose={closeDialog} />;
   else if (dialog?.type === 'message') dialogEl = <MessageDialog title={dialog.title} text={dialog.text} onClose={closeDialog} />;
   else if (dialog?.type === 'stats' && doc) dialogEl = <StatsDialog doc={doc} frame={frame} onClose={closeDialog} onExportCsv={() => void exportHistory()} />;
+  else if (dialog?.type === 'publish' && doc) dialogEl = <PublishDialog doc={doc} onClose={closeDialog} onToast={showToast} />;
   else if (dialog?.type === 'settings' && doc)
     dialogEl = (
       <SettingsDialog

@@ -27,12 +27,14 @@ sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 - **Statistik**: Live-Verlauf, Kennzahlen je Zustand, Mustererkennung, CSV-Export
 - Eigenes Projektformat **`.acp`** ([Spezifikation](docs/acp-format.md)), Import/Export von CSV und RLE (Golly), PNG-Schnappschüsse
 - Rückgängig/Wiederherstellen, Tastenkürzel
+- **Im Web veröffentlichen**: Simulationen mit dem AutoCell-Player in beliebige Webseiten einbinden
 - **Nostalgiemodus** (Ansicht › Nostalgiemodus): die Oberfläche des ursprünglichen Entwurfs
 
 ## Aufbau
 
 ```
 packages/core     Rechenkern (TypeScript, ohne DOM): Simulation, Regeln, Statistik, .acp
+packages/player   Web-Komponente <autocell-player> zum Einbinden in Webseiten
 apps/autocell     Oberfläche (React + Vite) – läuft im Browser und in der Desktop-Hülle
 apps/autocell/src-tauri  Desktop-Hülle (Tauri 2, Rust)
 docs/             Spezifikationen
@@ -74,6 +76,24 @@ der Festplatte, in Firefox und Safari per Hochladen und Herunterladen. Über das
 Installieren-Symbol in der Adressleiste lässt sich die Web-Version wie eine App
 in einem eigenen Fenster starten.
 
+### AutoCell-Player
+
+`<autocell-player>` spielt AutoCell-Projekte in jeder Webseite ab – eine
+eigenständige Web-Komponente (etwa 17 KB, ohne React), die nur den Rechenkern
+nutzt. In AutoCell erzeugt **Datei › Im Web veröffentlichen** den passenden
+Code-Schnipsel, wahlweise mit eingebettetem Projekt oder mit Verweis auf eine
+`.acp`-Datei.
+
+```html
+<script type="module" src="https://delbonum.github.io/autocell/player/autocell-player.js"></script>
+<autocell-player src="mein-projekt.acp" controls autoplay></autocell-player>
+```
+
+Alle Attribute, Beispiele und die JavaScript-Schnittstelle stehen auf der
+[Beispielseite](https://delbonum.github.io/autocell/player/)
+(Quelle: `packages/player/demo/index.html`). `npm run build` baut den Player
+mit und legt ihn unter `apps/autocell/dist/player` ab.
+
 ## Versionsnummer
 
 Die Versionsnummer folgt [SemVer](https://semver.org/lang/de/) und wird **nur**
@@ -91,5 +111,4 @@ npm run version:sync                     # in alle Pakete übertragen
 
 - Desktop-Hülle ausbauen: native Datei-Dialoge, Installationspakete für macOS und Linux
 - Web-Version offline nutzbar machen (Service Worker)
-- Web-Komponente `<autocell-player>` zum Einbinden in Webseiten (Datei › Im Web veröffentlichen)
 - Ausführliches Statistik-Fenster mit Messpunkten einzelner Zellen

@@ -15,6 +15,7 @@ if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {
 
 const targets = [
   'packages/core/package.json',
+  'packages/player/package.json',
   'apps/autocell/package.json',
   'apps/autocell/src-tauri/tauri.conf.json',
 ];

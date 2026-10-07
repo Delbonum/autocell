@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @autocell/app",
-    "build": "npm run build -w @autocell/core && npm run build -w @autocell/app",
+    "build": "npm run build -w @autocell/core && npm run build -w @autocell/app && npm run build -w @autocell/player && node scripts/bundle-player.mjs",
     "desktop:dev": "npm run tauri dev -w @autocell/app",
     "desktop:build": "npm run tauri build -w @autocell/app",
     "test": "npm test --workspaces --if-present",

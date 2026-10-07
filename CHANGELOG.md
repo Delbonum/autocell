@@ -31,3 +31,9 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
   (Verschieben, Minimieren, Maximieren, Schließen).
 - Web-Version auf GitHub Pages, automatisch gebaut bei jedem Push auf `main`;
   im Browser als App installierbar (Web-Manifest).
+- AutoCell-Player `<autocell-player>`: Web-Komponente zum Einbinden von
+  Simulationen in beliebige Webseiten (Projekt per `src`, eingebettet oder als
+  Vorlage; Steuerleiste, Legende, Autoplay, Wiederholen, anklickbare Zellen),
+  mit Beispielseite unter `/player/`.
+- Datei › Im Web veröffentlichen (im Nostalgiemodus „Publizieren“): erzeugt den
+  Code-Schnipsel für den Player, mit Live-Vorschau.
