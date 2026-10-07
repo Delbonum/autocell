@@ -33,7 +33,8 @@ sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 
 ```
 packages/core     Rechenkern (TypeScript, ohne DOM): Simulation, Regeln, Statistik, .acp
-apps/autocell     Oberfläche (React + Vite) – läuft im Browser und später in der Desktop-Hülle
+apps/autocell     Oberfläche (React + Vite) – läuft im Browser und in der Desktop-Hülle
+apps/autocell/src-tauri  Desktop-Hülle (Tauri 2, Rust)
 docs/             Spezifikationen
 scripts/          Hilfsskripte (z. B. Versionsabgleich)
 ```
@@ -48,6 +49,16 @@ npm run dev          # Oberfläche unter http://localhost:5173
 npm test             # alle Tests (Rechenkern und Oberflächenlogik)
 npm run typecheck    # TypeScript prüfen
 npm run build        # Produktions-Build nach apps/autocell/dist
+```
+
+### Desktop-App (Tauri)
+
+Zusätzlich nötig: [Rust](https://rustup.rs) und unter Windows die Visual Studio
+C++ Build Tools (Workload „Desktopentwicklung mit C++“).
+
+```bash
+npm run desktop:dev    # Desktop-Fenster mit Live-Neuladen
+npm run desktop:build  # autocell.exe und Installer unter apps/autocell/src-tauri/target/release
 ```
 
 ## Versionsnummer
@@ -65,6 +76,6 @@ npm run version:sync                     # in alle Pakete übertragen
 
 ## Nächste Schritte
 
-- Desktop-Hülle mit [Tauri](https://tauri.app) (native Datei-Dialoge, Installationspakete für Windows, macOS, Linux)
+- Desktop-Hülle ausbauen: native Datei-Dialoge, Installationspakete für macOS und Linux
 - Web-Komponente `<autocell-player>` zum Einbinden in Webseiten (Datei › Im Web veröffentlichen)
 - Ausführliches Statistik-Fenster mit Messpunkten einzelner Zellen

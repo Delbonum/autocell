@@ -25,3 +25,5 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
   „Parameter einstellen“ und Beenden-Dialog.
 - Rückgängig/Wiederherstellen, PNG-Schnappschuss, Druck.
 - Zwei Überraschungen für Neugierige.
+- Desktop-Hülle mit Tauri 2: `autocell.exe` und Windows-Installer (NSIS),
+  Dateizuordnung für `.acp`.

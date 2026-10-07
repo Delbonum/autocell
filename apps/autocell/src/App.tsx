@@ -25,7 +25,7 @@ import {
   type Doc,
 } from './app/doc';
 import { baseName, interpretFile, projectFromGrid } from './app/fileActions';
-import { downloadBlob, isDesktop, openFile, saveFile, toggleFullscreen } from './app/platform';
+import { closeDesktopWindow, downloadBlob, isDesktop, openFile, saveFile, toggleFullscreen } from './app/platform';
 import { ContextMenu, RetroTools, TabBar, TitleBar, ICON_URL } from './components/Chrome';
 import {
   ConfirmDialog,
@@ -343,7 +343,7 @@ export function App() {
   const doQuit = () => {
     setDialog(null);
     setRunning(false);
-    if (isDesktop()) window.close();
+    if (isDesktop()) void closeDesktopWindow();
     setQuit(true);
   };
 
