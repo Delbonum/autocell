@@ -144,7 +144,7 @@ describe('Spezifikation', () => {
     const { readFileSync } = await import('node:fs');
     const doc = readFileSync(new URL('../../../docs/acp-format.md', import.meta.url), 'utf8');
     const section = doc.slice(doc.indexOf('## 8.'));
-    const json = /```json\n([\s\S]*?)```/.exec(section)![1];
+    const json = /```json\r?\n([\s\S]*?)```/.exec(section)![1];
     const p = decodeAcp(new TextEncoder().encode(json));
     expect(p.meta.name).toBe('Blinker');
     expect(p.current.cells[7] + p.current.cells[12] + p.current.cells[17]).toBe(3);
