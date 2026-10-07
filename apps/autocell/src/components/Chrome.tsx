@@ -16,18 +16,21 @@ interface TitleBarProps {
   onMinimize?: () => void;
   onMaximize: () => void;
   onClose: () => void;
+  /** Desktop: Fenster lässt sich an der Titelleiste verschieben (Doppelklick maximiert). */
+  dragRegion?: boolean;
 }
 
-export function TitleBar({ theme, title, menu, onMinimize, onMaximize, onClose }: TitleBarProps) {
+export function TitleBar({ theme, title, menu, onMinimize, onMaximize, onClose, dragRegion }: TitleBarProps) {
+  const drag = dragRegion ? { 'data-tauri-drag-region': true } : {};
   return (
-    <header className="titlebar">
+    <header className="titlebar" {...drag}>
       {theme === 'retro' ? (
-        <div className="retro-logo" aria-label="AutoCell">AC</div>
+        <div className="retro-logo" aria-label="AutoCell" {...drag}>AC</div>
       ) : (
-        <img className="titlebar-icon" src={ICON_URL} alt="AutoCell" />
+        <img className="titlebar-icon" src={ICON_URL} alt="AutoCell" {...drag} />
       )}
       {menu}
-      <div className="titlebar-title">{title}</div>
+      <div className="titlebar-title" {...drag}>{title}</div>
       <div className="window-controls">
         <button className="wc" aria-label="Minimieren" onClick={onMinimize} disabled={!onMinimize}>
           <Icon.minus size={14} strokeWidth={theme === 'retro' ? 3 : 1.75} />

@@ -25,7 +25,17 @@ import {
   type Doc,
 } from './app/doc';
 import { baseName, interpretFile, projectFromGrid } from './app/fileActions';
-import { closeDesktopWindow, downloadBlob, isDesktop, openFile, saveFile, toggleFullscreen } from './app/platform';
+import {
+  closeDesktopWindow,
+  downloadBlob,
+  isDesktop,
+  minimizeDesktopWindow,
+  openFile,
+  saveFile,
+  setNativeTitleBar,
+  toggleFullscreen,
+  toggleMaximizeDesktopWindow,
+} from './app/platform';
 import { ContextMenu, RetroTools, TabBar, TitleBar, ICON_URL } from './components/Chrome';
 import {
   ConfirmDialog,
@@ -110,6 +120,11 @@ export function App() {
       /* egal */
     }
   };
+
+  // Desktop: im Nostalgiemodus nur die Retro-Titelleiste zeigen, nicht zusätzlich die von Windows.
+  useEffect(() => {
+    if (isDesktop()) void setNativeTitleBar(theme !== 'retro');
+  }, [theme]);
 
   /* ---------------- Dokumente ---------------- */
 
@@ -726,8 +741,10 @@ export function App() {
       theme={theme}
       title={title}
       menu={<MenuBar menus={menus} open={menu} onOpen={(id) => { setMenu(id); setCtx(null); }} />}
-      onMaximize={toggleFullscreen}
+      onMinimize={isDesktop() ? () => void minimizeDesktopWindow() : undefined}
+      onMaximize={isDesktop() ? () => void toggleMaximizeDesktopWindow() : toggleFullscreen}
       onClose={requestQuit}
+      dragRegion={isDesktop()}
     />
   );
 

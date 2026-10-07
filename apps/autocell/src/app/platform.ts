@@ -117,10 +117,30 @@ export function isDesktop(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 }
 
+async function desktopWindow() {
+  const { getCurrentWindow } = await import('@tauri-apps/api/window');
+  return getCurrentWindow();
+}
+
 /** Schließt das Desktop-Fenster; `window.close()` wirkt in Tauri nicht. */
 export async function closeDesktopWindow(): Promise<void> {
-  const { getCurrentWindow } = await import('@tauri-apps/api/window');
-  await getCurrentWindow().close();
+  await (await desktopWindow()).close();
+}
+
+export async function minimizeDesktopWindow(): Promise<void> {
+  await (await desktopWindow()).minimize();
+}
+
+export async function toggleMaximizeDesktopWindow(): Promise<void> {
+  await (await desktopWindow()).toggleMaximize();
+}
+
+/**
+ * Blendet die Titelleiste von Windows ein oder aus. Im Nostalgiemodus
+ * übernimmt die eigene Retro-Titelleiste deren Aufgaben.
+ */
+export async function setNativeTitleBar(visible: boolean): Promise<void> {
+  await (await desktopWindow()).setDecorations(visible);
 }
 
 export function toggleFullscreen(): void {
