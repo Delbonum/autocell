@@ -31,6 +31,7 @@ Dateiendung: `.acp`
 | `ages.bin` | nein | Alter jeder Zelle (Abschnitt 4.2) |
 | `initial.bin` | nein | Rasterzustand bei Generation 0, für „Zurücksetzen“ |
 | `history.json` | nein | Statistikverlauf (Abschnitt 5) |
+| `probes.json` | nein | Verlauf der Messpunkte (Abschnitt 5.1, ab AutoCell 2.2.0) |
 
 \* Welche Einträge verwendet werden, legt `project.json` → `data` fest. Unbekannte
 Einträge werden beim Lesen ignoriert. Künftige Versionen dürfen weitere ablegen,
@@ -71,6 +72,10 @@ z. B. `thumbnail.png`.
 
   "view": { "cellSize": 10, "showGridLines": true },
 
+  "probes": [                            // Messpunkte, optional (ab AutoCell 2.2.0)
+    { "name": "A", "x": 12, "y": 7 }     // x, y: 0-basierte Zellkoordinaten im Raster
+  ],
+
   "data": {
     "generation": 0,                     // aktuelle Generation
     "rngState": 1234567,                 // Zustand des Zufallsgenerators
@@ -78,7 +83,8 @@ z. B. `thumbnail.png`.
     "cells":   { "file": "cells.bin" },  // Abschnitt 4
     "ages":    { "file": "ages.bin" },   // oder null
     "initial": { "file": "initial.bin" },// oder null
-    "history": { "file": "history.json" }// oder null, oder inline (Abschnitt 5)
+    "history": { "file": "history.json" },// oder null, oder inline (Abschnitt 5)
+    "probeHistory": { "file": "probes.json" } // optional, oder null, oder inline (5.1)
   }
 }
 ```
@@ -215,6 +221,21 @@ ergeben.
 `counts[i][s]` ist die Anzahl der Zellen im Zustand `s` in Generation
 `generations[i]`. Der Verlauf steht entweder in `history.json` oder inline in
 `data.history`.
+
+### 5.1 Messpunkte
+
+Messpunkte sind einzelne Zellen, deren Zustand je Generation aufgezeichnet wird
+(Statistik-Fenster › Messpunkte). Ihre Lage steht in `probes`, der Verlauf in
+`probes.json` oder inline in `data.probeHistory`:
+
+```json
+{ "generations": [0, 1, 2], "series": [[1, 1, 0], [-1, 0, 0]] }
+```
+
+`series[k][i]` ist der Zustand von Messpunkt `k` in Generation `generations[i]`;
+`-1` bedeutet „nicht aufgezeichnet“ (der Messpunkt kam erst später hinzu).
+`series` hat genau so viele Einträge wie `probes`. Fehlt der Verlauf, beginnt
+die Aufzeichnung beim Laden neu. Ältere AutoCell-Versionen ignorieren beides.
 
 ## 6. Versionierung und Kompatibilität
 

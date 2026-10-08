@@ -18,7 +18,10 @@ import {
   docToProject,
   pushUndo,
   randomizeDoc,
+  addProbe,
+  probeAtCell,
   recordStep,
+  removeProbe,
   redo,
   resetDoc,
   undo,
@@ -43,11 +46,11 @@ import {
   CreditsDialog,
   MessageDialog,
   ShortcutsDialog,
-  StatsDialog,
   type Theme,
 } from './components/Dialog';
 import { NewProjectDialog, type NewProjectRequest } from './components/dialogs/NewProjectDialog';
 import { PublishDialog } from './components/dialogs/PublishDialog';
+import { StatsDialog, type StatsTab } from './components/dialogs/StatsDialog';
 import { RetroParamsDialog } from './components/dialogs/RetroParamsDialog';
 import { SettingsDialog, type SettingsTab } from './components/dialogs/SettingsDialog';
 import { GridCanvas, renderPng } from './components/GridCanvas';
@@ -64,7 +67,7 @@ type DialogState =
   | { type: 'retroParams' }
   | { type: 'credits' }
   | { type: 'shortcuts' }
-  | { type: 'stats' }
+  | { type: 'stats'; tab?: StatsTab }
   | { type: 'publish' }
   | { type: 'confirmQuit' }
   | { type: 'confirmClose'; docId: string }
@@ -246,6 +249,12 @@ export function App() {
     if (!doc) return;
     const csv = doc.history.toCSV(doc.sim.model.states.map((s) => s.name));
     await saveFile(`${doc.project.meta.name} – Statistik.csv`, csv, 'text/csv');
+  };
+
+  const exportProbes = async () => {
+    if (!doc) return;
+    const csv = doc.probeLog.toCSV(doc.probes, doc.sim.model.states.map((s) => s.name));
+    await saveFile(`${doc.project.meta.name} – Messpunkte.csv`, csv, 'text/csv');
   };
 
   const snapshot = async () => {
@@ -647,6 +656,7 @@ export function App() {
           showGridLines={doc.project.view.showGridLines || theme === 'retro'}
           lineColor={theme === 'retro' ? '#000000' : '#1a2a20'}
           frame={frame}
+          probes={doc.probes}
           onStrokeStart={() => {
             pushUndo(doc, 'Zellen bemalt');
             setCtx(null);
@@ -693,7 +703,18 @@ export function App() {
   else if (dialog?.type === 'credits') dialogEl = <CreditsDialog onClose={closeDialog} />;
   else if (dialog?.type === 'shortcuts') dialogEl = <ShortcutsDialog onClose={closeDialog} />;
   else if (dialog?.type === 'message') dialogEl = <MessageDialog title={dialog.title} text={dialog.text} onClose={closeDialog} />;
-  else if (dialog?.type === 'stats' && doc) dialogEl = <StatsDialog doc={doc} frame={frame} onClose={closeDialog} onExportCsv={() => void exportHistory()} />;
+  else if (dialog?.type === 'stats' && doc)
+    dialogEl = (
+      <StatsDialog
+        doc={doc}
+        frame={frame}
+        initialTab={dialog.tab}
+        onClose={closeDialog}
+        onExportCsv={() => void exportHistory()}
+        onExportProbesCsv={() => void exportProbes()}
+        onChange={refresh}
+      />
+    );
   else if (dialog?.type === 'publish' && doc) dialogEl = <PublishDialog doc={doc} onClose={closeDialog} onToast={showToast} />;
   else if (dialog?.type === 'settings' && doc)
     dialogEl = (
@@ -840,10 +861,24 @@ export function App() {
             setCtx(null);
           }}
           onHistory={() => {
-            const st = doc.sim.model.states[doc.sim.get(ctx.x, ctx.y)];
-            const age = doc.sim.ages[ctx.y * doc.sim.width + ctx.x];
-            showToast(`Zelle (${ctx.x + 1}, ${ctx.y + 1}): seit ${age.toLocaleString('de-DE')} Generationen im Zustand „${st.name}“`);
+            // Der Verlauf einer Zelle wird über einen Messpunkt aufgezeichnet.
+            addProbe(doc, ctx.x, ctx.y);
             setCtx(null);
+            setDialog({ type: 'stats', tab: 'probes' });
+            refresh();
+          }}
+          onToggleProbe={() => {
+            const k = probeAtCell(doc, ctx.x, ctx.y);
+            if (k >= 0) {
+              const name = doc.probes[k].name;
+              removeProbe(doc, k);
+              showToast(`Messpunkt „${name}“ entfernt`);
+            } else {
+              const name = doc.probes[addProbe(doc, ctx.x, ctx.y)].name;
+              showToast(`Messpunkt „${name}“ gesetzt – Verlauf unter Statistik › Messpunkte`);
+            }
+            setCtx(null);
+            refresh();
           }}
         />
       )}

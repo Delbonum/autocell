@@ -93,14 +93,17 @@ interface CtxProps {
   onSet: (state: number) => void;
   onBrush: (state: number) => void;
   onHistory: () => void;
+  /** Messpunkt auf dieser Zelle setzen bzw. entfernen. */
+  onToggleProbe: () => void;
   onClose: () => void;
 }
 
-export function ContextMenu({ theme, doc, x, y, clientX, clientY, onSet, onBrush, onHistory, onClose }: CtxProps) {
+export function ContextMenu({ theme, doc, x, y, clientX, clientY, onSet, onBrush, onHistory, onToggleProbe, onClose }: CtxProps) {
   const [subOpen, setSubOpen] = useState(false);
   const states = doc.sim.model.states;
   const cur = doc.sim.get(x, y);
   const age = doc.sim.ages[y * doc.sim.width + x];
+  const probe = doc.probes.find((p) => p.x === x && p.y === y);
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const left = Math.min(clientX + 4, vw - (theme === 'retro' ? 460 : 250));
@@ -167,6 +170,9 @@ export function ContextMenu({ theme, doc, x, y, clientX, clientY, onSet, onBrush
             <div className="menu-sep" />
             <button className="menu-item" role="menuitem" onClick={() => onBrush(cur)}>
               <span className="menu-label">Zustand dieser Zelle als Pinsel</span>
+            </button>
+            <button className="menu-item" role="menuitem" onClick={onToggleProbe}>
+              <span className="menu-label">{probe ? `Messpunkt „${probe.name}“ entfernen` : 'Messpunkt setzen'}</span>
             </button>
             <button className="menu-item" role="menuitem" onClick={onHistory}>
               <span className="menu-label">Zellverlauf anzeigen</span>

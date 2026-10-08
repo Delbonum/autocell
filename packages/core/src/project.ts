@@ -1,3 +1,4 @@
+import type { Probe, ProbeLog } from './probes';
 import { randomSeed, Rng } from './rng';
 import { createCellArray, Simulation } from './simulation';
 import { History } from './stats';
@@ -54,6 +55,10 @@ export interface Project {
   initial: CellArray | null;
   /** Aufgezeichnete Statistik. */
   history: History;
+  /** Messpunkte (einzelne beobachtete Zellen). */
+  probes?: Probe[];
+  /** Aufgezeichneter Verlauf der Messpunkte. */
+  probeLog?: ProbeLog;
 }
 
 export interface NewProjectOptions {

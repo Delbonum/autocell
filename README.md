@@ -9,7 +9,7 @@ AutoCell 2 ist eine vollständige Neuentwicklung (Version 1 wird nicht
 weitergeführt) und entsteht als Desktop-Anwendung und als Web-Anwendung, die
 sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 
-## Funktionen (Stand 2.1.0, in Entwicklung)
+## Funktionen (Stand 2.2.0, in Entwicklung)
 
 - Mehrere Projekte gleichzeitig in Tabs, Vorlagen für den schnellen Start
 - Beliebig viele **Zustände** mit Name, Farbe und Startanteil
@@ -25,6 +25,7 @@ sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 - **Automatische Simulation** mit einstellbarem Tempo (Gen./s oder s/Gen.),
   Einzelschritt, Zurücksetzen und automatischem Stopp bei Generation n oder stabilem/periodischem Muster
 - **Statistik**: Live-Verlauf, Kennzahlen je Zustand, Mustererkennung, CSV-Export
+- **Messpunkte**: einzelne Zellen beobachten – Zeitleiste, Anteile je Zustand, Wechsel, längste Phase
 - Eigenes Projektformat **`.acp`** ([Spezifikation](docs/acp-format.md)), Import/Export von CSV und RLE (Golly), PNG-Schnappschüsse
 - Rückgängig/Wiederherstellen, Tastenkürzel
 - **Im Web veröffentlichen**: Simulationen mit dem AutoCell-Player in beliebige Webseiten einbinden
@@ -74,7 +75,9 @@ legen, auch in ein Unterverzeichnis.
 Im Browser öffnet und speichert AutoCell Dateien in Chrome und Edge direkt auf
 der Festplatte, in Firefox und Safari per Hochladen und Herunterladen. Über das
 Installieren-Symbol in der Adressleiste lässt sich die Web-Version wie eine App
-in einem eigenen Fenster starten.
+in einem eigenen Fenster starten. Nach dem ersten Besuch funktioniert sie auch
+offline (Service Worker, erzeugt von `apps/autocell/build/offline.ts`); neue
+Versionen kündigt sie mit „Neu laden“ an.
 
 ### AutoCell-Player
 
@@ -110,5 +113,3 @@ npm run version:sync                     # in alle Pakete übertragen
 ## Nächste Schritte
 
 - Desktop-Hülle ausbauen: native Datei-Dialoge, Installationspakete für macOS und Linux
-- Web-Version offline nutzbar machen (Service Worker)
-- Ausführliches Statistik-Fenster mit Messpunkten einzelner Zellen

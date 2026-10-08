@@ -8,3 +8,4 @@ export * from './templates';
 export * from './acp';
 export * from './io';
 export * from './describe';
+export * from './probes';

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Simulation } from '@autocell/core';
+import type { Probe, Simulation } from '@autocell/core';
 
 export interface GridCanvasProps {
   sim: Simulation;
@@ -9,6 +9,8 @@ export interface GridCanvasProps {
   lineColor: string;
   /** Erhöht sich bei jeder Änderung – löst das Neuzeichnen aus. */
   frame: number;
+  /** Messpunkte, die markiert werden. */
+  probes?: readonly Probe[];
   onStrokeStart: () => void;
   onPaint: (indices: number[]) => void;
   onStrokeEnd: () => void;
@@ -49,7 +51,7 @@ function line(x0: number, y0: number, x1: number, y1: number): Array<[number, nu
 }
 
 export function GridCanvas(props: GridCanvasProps) {
-  const { sim, colors, cellSize, showGridLines, lineColor, frame } = props;
+  const { sim, colors, cellSize, showGridLines, lineColor, frame, probes } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferRef = useRef<HTMLCanvasElement | null>(null);
   const lastCell = useRef<[number, number] | null>(null);
@@ -97,7 +99,8 @@ export function GridCanvas(props: GridCanvasProps) {
       for (let x = 0; x <= W; x++) ctx.fillRect(Math.min(Math.round(x * step), pw - t), 0, t, ph);
       for (let y = 0; y <= H; y++) ctx.fillRect(0, Math.min(Math.round(y * step), ph - t), pw, t);
     }
-  }, [frame, sim, sim.width, sim.height, colors, cs, cssW, cssH, showGridLines, lineColor]);
+    if (probes?.length) drawProbes(ctx, probes, step, dpr, pw);
+  }, [frame, sim, sim.width, sim.height, colors, cs, cssW, cssH, showGridLines, lineColor, probes]);
 
   const cellAt = (e: React.PointerEvent | React.MouseEvent): [number, number] | null => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -154,6 +157,35 @@ export function GridCanvas(props: GridCanvasProps) {
       }}
     />
   );
+}
+
+/** Markiert Messpunkte: Rahmen um die Zelle (bei kleinen Zellen ein Ring) und Name daneben. */
+function drawProbes(ctx: CanvasRenderingContext2D, probes: readonly Probe[], step: number, dpr: number, pw: number): void {
+  ctx.save();
+  ctx.font = `600 ${Math.round(11 * dpr)}px "IBM Plex Mono", monospace`;
+  ctx.textBaseline = 'middle';
+  for (const p of probes) {
+    const x = p.x * step;
+    const y = p.y * step;
+    const pad = Math.max(2 * dpr, step < 8 * dpr ? 4 * dpr : 0);
+    const size = step + 2 * pad;
+    ctx.lineWidth = 3 * dpr;
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(x - pad, y - pad, size, size);
+    ctx.lineWidth = 1.5 * dpr;
+    ctx.strokeStyle = '#fff';
+    ctx.strokeRect(x - pad, y - pad, size, size);
+    const w = ctx.measureText(p.name).width + 6 * dpr;
+    const h = 15 * dpr;
+    let lx = x + step + pad + 2 * dpr;
+    if (lx + w > pw) lx = x - pad - 2 * dpr - w;
+    const ly = Math.max(0, y + step / 2 - h / 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillRect(lx, ly, w, h);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(p.name, lx + 3 * dpr, ly + h / 2);
+  }
+  ctx.restore();
 }
 
 /** Rendert das Raster als PNG (für Schnappschüsse). */

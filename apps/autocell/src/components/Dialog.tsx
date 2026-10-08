@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ACP_FORMAT_VERSION } from '@autocell/core';
-import type { Doc } from '../app/doc';
-import { displayName } from '../app/doc';
 import { APP_NAME, APP_VERSION, BUILD_DATE, CREDITS } from '../version';
-import { Chart } from './Chart';
 import { Icon } from './Icons';
-import { patternText } from './Panels';
 
 export type Theme = 'modern' | 'retro';
 
@@ -163,88 +159,3 @@ export function ShortcutsDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ---------------- Statistik ---------------- */
-
-export function StatsDialog({ doc, frame, onClose, onExportCsv }: { doc: Doc; frame: number; onClose: () => void; onExportCsv: () => void }) {
-  const [range, setRange] = useState<0 | 100 | 500>(0);
-  const model = doc.sim.model;
-  const total = doc.sim.size;
-  const h = doc.history;
-  const window = range === 0 ? h.length : Math.min(range, h.length);
-  const fmt = (n: number) => Math.round(n).toLocaleString('de-DE');
-  const pattern = patternText(doc.pattern);
-  return (
-    <Dialog
-      title="Statistik"
-      subtitle={displayName(doc)}
-      onClose={onClose}
-      width={980}
-      footer={
-        <>
-          <span style={{ color: 'var(--muted)', fontSize: 12 }}>{h.length.toLocaleString('de-DE')} Generationen aufgezeichnet</span>
-          <span className="spacer" />
-          <button className="btn" onClick={onExportCsv}>Als CSV exportieren</button>
-          <button className="btn btn-primary" onClick={onClose}>Schließen</button>
-        </>
-      }
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div className="row-between">
-          <div className="segmented">
-            {([0, 500, 100] as const).map((r) => (
-              <button key={r} aria-pressed={range === r} onClick={() => setRange(r)} style={{ padding: '6px 12px' }}>
-                {r === 0 ? 'Alle' : `Letzte ${r}`}
-              </button>
-            ))}
-          </div>
-          <div className="legend">
-            {model.states.map((s, i) => (
-              <span key={i}><span className="swatch small" style={{ background: s.color }} />{s.name}</span>
-            ))}
-          </div>
-        </div>
-        <div className="chart-box">
-          <Chart
-            history={h}
-            colors={model.states.map((s) => s.color)}
-            total={total}
-            window={range === 0 ? 0 : range}
-            height={260}
-            gridColor="#1d2c23"
-            frame={frame}
-            label="Anteil der Zustände je Generation"
-          />
-        </div>
-        <table className="table">
-          <thead>
-            <tr>
-              <th scope="col">Zustand</th>
-              <th scope="col">Aktuell</th>
-              <th scope="col">Minimum</th>
-              <th scope="col">Maximum (Gen.)</th>
-              <th scope="col">Mittelwert</th>
-            </tr>
-          </thead>
-          <tbody>
-            {model.states.map((s, i) => {
-              const sum = h.summary(i, window);
-              return (
-                <tr key={i}>
-                  <th scope="row" style={{ fontWeight: 500 }}>
-                    <span className="swatch small" style={{ background: s.color, display: 'inline-block', marginRight: 8, verticalAlign: -1 }} />
-                    {s.name}
-                  </th>
-                  <td>{fmt(doc.sim.counts[i] ?? 0)}</td>
-                  <td>{fmt(sum.min)}</td>
-                  <td>{fmt(sum.max)} ({fmt(sum.maxGeneration)})</td>
-                  <td>{fmt(sum.mean)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <div className="pattern-note">{pattern ?? 'Kein stabiler oder wiederkehrender Zustand erkannt.'}</div>
-      </div>
-    </Dialog>
-  );
-}

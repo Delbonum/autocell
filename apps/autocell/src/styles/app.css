@@ -1320,3 +1320,31 @@ textarea.input {
   z-index: 91;
   max-width: calc(100% - 32px);
 }
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.icon-btn:hover {
+  background: var(--menu-hover);
+  color: var(--text);
+}
+
+.probe-table th,
+.probe-table td {
+  padding: 5px 0 5px 12px;
+  vertical-align: middle;
+}
+
+.probe-table th:first-child,
+.probe-table td:first-child {
+  padding-left: 0;
+}

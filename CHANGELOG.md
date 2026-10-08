@@ -6,6 +6,22 @@ Alle nennenswerten Änderungen an AutoCell. Die Versionsnummern folgen
 Die Version 2.0.0 ist eine vollständige Neuentwicklung. Sie ersetzt die frühere
 Version 1 und ist zu deren Dateien nicht kompatibel.
 
+## [2.2.0] – 2026-10-08
+
+### Neu
+- Web-Version offline nutzbar: Ein Service Worker speichert die App beim ersten
+  Besuch; danach startet sie auch ohne Internet. Neue Versionen werden im
+  Hintergrund geladen und per Hinweis „Neu laden“ aktiviert.
+- Ausführliches Statistik-Fenster mit den Reitern „Übersicht“ (zusätzlich
+  Anteil, Änderung zur Vorgeneration, Minimum mit Generation, veränderte Zellen)
+  und „Messpunkte“.
+- Messpunkte: einzelne Zellen per Rechtsklick beobachten. Zeitleiste je
+  Messpunkt, Anteil der Zeit je Zustand, Zahl der Wechsel, längste Phase,
+  CSV-Export; Markierung im Raster. „Zellverlauf anzeigen“ öffnet die
+  Auswertung der Zelle.
+- `.acp`: optionale Felder `probes` und `data.probeHistory` (`probes.json`),
+  Formatversion bleibt 1.
+
 ## [2.1.0] – 2026-10-08
 
 ### Neu
@@ -19,6 +35,10 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
   mit Beispielseite unter `/player/`.
 - Datei › Im Web veröffentlichen (im Nostalgiemodus „Publizieren“): erzeugt den
   Code-Schnipsel für den Player, mit Live-Vorschau.
+
+### Geändert
+- `npm run version:sync` überträgt die Version auch in `Cargo.toml` und
+  `Cargo.lock`.
 
 ## [2.0.0] – 2026-10-07
 

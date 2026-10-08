@@ -4,6 +4,7 @@
  */
 import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate';
 import { detectPreset } from './neighborhood';
+import { ProbeLog, type Probe } from './probes';
 import type { Project } from './project';
 import { History } from './stats';
 import {
@@ -88,6 +89,8 @@ export interface AcpJson {
     stopWhenStable?: boolean;
   };
   view?: { cellSize?: number; showGridLines?: boolean };
+  /** Messpunkte (ab AutoCell 2.2.0, optional). */
+  probes?: Array<{ name: string; x: number; y: number }>;
   data?: {
     generation?: number;
     rngState?: number;
@@ -96,6 +99,8 @@ export interface AcpJson {
     ages?: { file: string } | null;
     initial?: CellDataRef | null;
     history?: { file: string } | { generations: number[]; counts: number[][] } | null;
+    /** Verlauf der Messpunkte (ab AutoCell 2.2.0, optional). */
+    probeHistory?: { file: string } | { generations: number[]; series: number[][] } | null;
   };
 }
 
@@ -151,6 +156,7 @@ export function projectToJson(p: Project, appVersion: string): AcpJson {
     },
     simulation: { ...p.settings },
     view: { ...p.view },
+    ...(p.probes?.length ? { probes: p.probes.map((q) => ({ name: q.name, x: q.x, y: q.y })) } : {}),
     data: {
       generation: p.current.generation,
       rngState: p.current.rngState,
@@ -179,6 +185,10 @@ export function encodeAcp(p: Project, options: EncodeOptions): Uint8Array {
     files['history.json'] = [strToU8(JSON.stringify(p.history.toJSON())), { level }];
   } else {
     json.data!.history = null;
+  }
+  if (options.includeHistory !== false && p.probes?.length && p.probeLog && p.probeLog.length > 0) {
+    json.data!.probeHistory = { file: 'probes.json' };
+    files['probes.json'] = [strToU8(JSON.stringify(p.probeLog.toJSON())), { level }];
   }
   // Reihenfolge im Archiv wie bei ODF: „mimetype“ unkomprimiert zuerst, dann project.json.
   return zipSync({
@@ -524,6 +534,43 @@ export function jsonToProject(raw: unknown, file: (name: string) => Uint8Array |
     });
   }
 
+  let probes: Probe[] = [];
+  if (j.probes !== undefined) {
+    req(Array.isArray(j.probes), 'Liste erwartet', 'probes');
+    probes = (j.probes as unknown[]).map((q, i) => {
+      const path = `probes[${i}]`;
+      req(isObj(q), 'Objekt erwartet', path);
+      const o = q as Record<string, unknown>;
+      return {
+        name: str(o.name, `${path}.name`),
+        x: int(o.x, `${path}.x`, 0, width - 1),
+        y: int(o.y, `${path}.y`, 0, height - 1),
+      };
+    });
+  }
+
+  let probeLog = new ProbeLog();
+  const ph = data.probeHistory;
+  if (isObj(ph) && probes.length > 0) {
+    let pj: unknown = ph;
+    if (typeof ph.file === 'string') {
+      const bytes = file(ph.file);
+      req(bytes !== undefined, `Datei „${ph.file}“ fehlt im Archiv`, 'data.probeHistory');
+      pj = parseJson(decodeText(bytes!));
+    }
+    req(isObj(pj) && Array.isArray(pj.generations) && Array.isArray(pj.series), '{ generations, series } erwartet', 'data.probeHistory');
+    const pp = pj as { generations: unknown[]; series: unknown[] };
+    req(pp.series.length === probes.length, 'series passt nicht zur Zahl der Messpunkte', 'data.probeHistory');
+    probeLog = ProbeLog.fromJSON({
+      generations: pp.generations.map((g, i) => int(g, `data.probeHistory.generations[${i}]`, 0, Number.MAX_SAFE_INTEGER)),
+      series: pp.series.map((s, k) => {
+        req(Array.isArray(s), 'Liste erwartet', `data.probeHistory.series[${k}]`);
+        return (s as unknown[]).map((v) => (Number.isInteger(v) && (v as number) >= 0 && (v as number) < n ? (v as number) : -1));
+      }),
+    });
+  }
+  while (probeLog.series.length < probes.length) probeLog.addSeries();
+
   const now = new Date().toISOString();
   const speedUnit = sim.speedUnit === 'spg' ? 'spg' : 'gps';
   return {
@@ -560,5 +607,7 @@ export function jsonToProject(raw: unknown, file: (name: string) => Uint8Array |
     },
     initial,
     history,
+    probes,
+    probeLog,
   };
 }

@@ -8,12 +8,17 @@ import {
   createProject,
   getTemplate,
   History,
+  nextProbeName,
   PatternDetector,
+  probeAt,
+  ProbeLog,
+  probeValues,
   randomSeed,
   Rng,
   simulationFromProject,
   type Model,
   type PatternInfo,
+  type Probe,
   type Project,
   type Simulation,
   type SimulationSnapshot,
@@ -36,6 +41,9 @@ export interface Doc {
   project: Project;
   sim: Simulation;
   history: History;
+  /** Messpunkte und ihr Verlauf. */
+  probes: Probe[];
+  probeLog: ProbeLog;
   detector: PatternDetector;
   pattern: PatternInfo;
   /** Dateiname, unter dem gespeichert wurde (null = noch nie gespeichert). */
@@ -54,11 +62,17 @@ export function createDoc(project: Project, fileName: string | null = null, file
   const detector = new PatternDetector();
   detector.observe(sim.generation, sim.cells);
   if (project.history.length === 0) project.history.record(sim.generation, sim.counts);
+  const probes = project.probes?.slice() ?? [];
+  const probeLog = project.probeLog ?? new ProbeLog();
+  while (probeLog.series.length < probes.length) probeLog.addSeries();
+  if (probes.length > 0) probeLog.record(sim.generation, probeValues(probes, sim));
   return {
     id: `doc-${++counter}`,
     project,
     sim,
     history: project.history,
+    probes,
+    probeLog,
     detector,
     pattern: { kind: 'none' },
     fileName,
@@ -95,6 +109,8 @@ export function displayName(doc: Doc): string {
 export function docToProject(doc: Doc): Project {
   const p = captureSimulation(doc.project, doc.sim);
   p.history = doc.history;
+  p.probes = doc.probes.slice();
+  p.probeLog = doc.probeLog;
   p.meta = { ...p.meta, modifiedAt: new Date().toISOString() };
   return p;
 }
@@ -119,6 +135,8 @@ function apply(doc: Doc, e: UndoEntry): void {
   doc.project = { ...doc.project, model: e.model, width: e.width, height: e.height, initial: e.initial };
   doc.history.truncateAfter(doc.sim.generation);
   doc.history.record(doc.sim.generation, doc.sim.counts);
+  doc.probeLog.truncateAfter(doc.sim.generation);
+  recordProbes(doc);
   doc.detector.reset();
   doc.pattern = { kind: 'none' };
   doc.dirty = true;
@@ -149,9 +167,14 @@ export function redo(doc: Doc): string | null {
 
 /* ---------- Änderungen ---------- */
 
+function recordProbes(doc: Doc): void {
+  if (doc.probes.length > 0) doc.probeLog.record(doc.sim.generation, probeValues(doc.probes, doc.sim));
+}
+
 /** Nach jedem Simulationsschritt aufrufen. */
 export function recordStep(doc: Doc): void {
   doc.history.record(doc.sim.generation, doc.sim.counts);
+  recordProbes(doc);
   doc.pattern = doc.detector.observe(doc.sim.generation, doc.sim.cells);
   doc.dirty = true;
 }
@@ -160,6 +183,7 @@ export function recordStep(doc: Doc): void {
 export function afterEdit(doc: Doc): void {
   if (doc.sim.generation === 0) doc.project.initial = doc.sim.cells.slice();
   doc.history.record(doc.sim.generation, doc.sim.counts);
+  recordProbes(doc);
   doc.detector.reset();
   doc.pattern = { kind: 'none' };
   doc.dirty = true;
@@ -173,6 +197,8 @@ function restartAtZero(doc: Doc): void {
   doc.project.initial = doc.sim.cells.slice();
   doc.history.clear();
   doc.history.record(0, doc.sim.counts);
+  doc.probeLog.clear();
+  recordProbes(doc);
   doc.detector.reset();
   doc.detector.observe(0, doc.sim.cells);
   doc.pattern = { kind: 'none' };
@@ -209,8 +235,45 @@ export function applyModel(doc: Doc, model: Model, width = doc.sim.width, height
   }
   doc.sim.setModel(model);
   doc.project = { ...doc.project, model, width, height };
+  // Messpunkte außerhalb des verkleinerten Rasters entfallen.
+  for (let k = doc.probes.length - 1; k >= 0; k--) {
+    if (doc.probes[k].x >= width || doc.probes[k].y >= height) removeProbe(doc, k);
+  }
   if (statesChanged) {
     doc.history.clear();
+    doc.probeLog.clear();
   }
   afterEdit(doc);
+}
+
+/* ---------- Messpunkte ---------- */
+
+/** Setzt einen Messpunkt auf (x, y), sofern dort noch keiner ist. Gibt seinen Index zurück. */
+export function addProbe(doc: Doc, x: number, y: number): number {
+  const existing = probeAt(doc.probes, x, y);
+  if (existing >= 0) return existing;
+  doc.probes.push({ name: nextProbeName(doc.probes), x, y });
+  doc.probeLog.addSeries();
+  recordProbes(doc);
+  doc.dirty = true;
+  return doc.probes.length - 1;
+}
+
+/** Index des Messpunkts auf (x, y) oder -1. */
+export function probeAtCell(doc: Doc, x: number, y: number): number {
+  return probeAt(doc.probes, x, y);
+}
+
+export function removeProbe(doc: Doc, k: number): void {
+  if (k < 0 || k >= doc.probes.length) return;
+  doc.probes.splice(k, 1);
+  doc.probeLog.removeSeries(k);
+  doc.dirty = true;
+}
+
+export function renameProbe(doc: Doc, k: number, name: string): void {
+  const p = doc.probes[k];
+  if (!p || !name.trim() || p.name === name.trim()) return;
+  doc.probes[k] = { ...p, name: name.trim() };
+  doc.dirty = true;
 }
