@@ -76,7 +76,7 @@ jobs:
             exit 1
           fi
 
-      - name: Bauen (und bei Tags: Release-Entwurf)
+      - name: Bauen (bei Tags zusätzlich Release-Entwurf)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
