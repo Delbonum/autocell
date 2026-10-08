@@ -1,5 +1,5 @@
 // Überträgt die Version aus der Wurzel-package.json (einzige Quelle der Wahrheit)
-// in alle Pakete und – sobald vorhanden – in die Tauri-Konfiguration.
+// in alle Pakete, die Tauri-Konfiguration und das Rust-Paket der Desktop-Hülle.
 //
 //   npm version 2.1.0 --no-git-tag-version && npm run version:sync
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -28,4 +28,19 @@ for (const rel of targets) {
   writeFileSync(file, JSON.stringify(json, null, 2) + '\n');
   console.log(`${rel} → ${version}`);
 }
+// Rust-Paket der Desktop-Hülle: Cargo.toml und der eigene Eintrag in Cargo.lock.
+const cargo = [
+  ['apps/autocell/src-tauri/Cargo.toml', /^(\[package\][^[]*?\r?\nversion = ")[^"]*(")/m],
+  ['apps/autocell/src-tauri/Cargo.lock', /(\r?\nname = "autocell"\r?\nversion = ")[^"]*(")/],
+];
+for (const [rel, pattern] of cargo) {
+  const file = join(root, rel);
+  if (!existsSync(file)) continue;
+  const text = readFileSync(file, 'utf8');
+  const updated = text.replace(pattern, `$1${version}$2`);
+  if (updated === text) continue;
+  writeFileSync(file, updated);
+  console.log(`${rel} → ${version}`);
+}
+
 console.log(`AutoCell ${version}`);

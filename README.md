@@ -9,7 +9,7 @@ AutoCell 2 ist eine vollständige Neuentwicklung (Version 1 wird nicht
 weitergeführt) und entsteht als Desktop-Anwendung und als Web-Anwendung, die
 sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 
-## Funktionen (Stand 2.0.0, in Entwicklung)
+## Funktionen (Stand 2.1.0, in Entwicklung)
 
 - Mehrere Projekte gleichzeitig in Tabs, Vorlagen für den schnellen Start
 - Beliebig viele **Zustände** mit Name, Farbe und Startanteil

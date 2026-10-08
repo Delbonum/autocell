@@ -6,7 +6,21 @@ Alle nennenswerten Änderungen an AutoCell. Die Versionsnummern folgen
 Die Version 2.0.0 ist eine vollständige Neuentwicklung. Sie ersetzt die frühere
 Version 1 und ist zu deren Dateien nicht kompatibel.
 
-## [Unveröffentlicht] – 2.0.0
+## [2.1.0] – 2026-10-08
+
+### Neu
+- Desktop: im Nostalgiemodus ersetzt die Retro-Titelleiste die von Windows
+  (Verschieben, Minimieren, Maximieren, Schließen).
+- Web-Version auf GitHub Pages, automatisch gebaut bei jedem Push auf `main`;
+  im Browser als App installierbar (Web-Manifest).
+- AutoCell-Player `<autocell-player>`: Web-Komponente zum Einbinden von
+  Simulationen in beliebige Webseiten (Projekt per `src`, eingebettet oder als
+  Vorlage; Steuerleiste, Legende, Autoplay, Wiederholen, anklickbare Zellen),
+  mit Beispielseite unter `/player/`.
+- Datei › Im Web veröffentlichen (im Nostalgiemodus „Publizieren“): erzeugt den
+  Code-Schnipsel für den Player, mit Live-Vorschau.
+
+## [2.0.0] – 2026-10-07
 
 ### Neu
 - Rechenkern `@autocell/core` in TypeScript: beliebig viele Zustände, Regeln mit
@@ -27,13 +41,3 @@ Version 1 und ist zu deren Dateien nicht kompatibel.
 - Zwei Überraschungen für Neugierige.
 - Desktop-Hülle mit Tauri 2: `autocell.exe` und Windows-Installer (NSIS),
   Dateizuordnung für `.acp`.
-- Desktop: im Nostalgiemodus ersetzt die Retro-Titelleiste die von Windows
-  (Verschieben, Minimieren, Maximieren, Schließen).
-- Web-Version auf GitHub Pages, automatisch gebaut bei jedem Push auf `main`;
-  im Browser als App installierbar (Web-Manifest).
-- AutoCell-Player `<autocell-player>`: Web-Komponente zum Einbinden von
-  Simulationen in beliebige Webseiten (Projekt per `src`, eingebettet oder als
-  Vorlage; Steuerleiste, Legende, Autoplay, Wiederholen, anklickbare Zellen),
-  mit Beispielseite unter `/player/`.
-- Datei › Im Web veröffentlichen (im Nostalgiemodus „Publizieren“): erzeugt den
-  Code-Schnipsel für den Player, mit Live-Vorschau.
