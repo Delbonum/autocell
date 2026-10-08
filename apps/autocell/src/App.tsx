@@ -25,6 +25,7 @@ import {
   type Doc,
 } from './app/doc';
 import { baseName, interpretFile, projectFromGrid } from './app/fileActions';
+import { registerOffline } from './app/offline';
 import {
   closeDesktopWindow,
   downloadBlob,
@@ -101,6 +102,8 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [game, setGame] = useState<EasterEgg | null>(null);
   const [quit, setQuit] = useState(false);
+  /** Bereitliegende neue Version der Web-App (aktivieren lädt die Seite neu). */
+  const [update, setUpdate] = useState<(() => void) | null>(null);
   const toastTimer = useRef<number>(0);
   const konami = useRef(new SequenceDetector(KONAMI_CODE));
 
@@ -113,6 +116,13 @@ export function App() {
     setToast(text);
     toastTimer.current = window.setTimeout(() => setToast(null), 2800);
   }, []);
+
+  useEffect(() => {
+    void registerOffline({
+      onReady: () => showToast('AutoCell ist jetzt auch offline verfügbar'),
+      onUpdate: (apply) => setUpdate(() => apply),
+    });
+  }, [showToast]);
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
@@ -839,6 +849,13 @@ export function App() {
       )}
       {dialogEl}
       {toast && <div className="toast" role="status">{toast}</div>}
+      {update && (
+        <div className="update-banner" role="status">
+          <span>Eine neue Version von AutoCell ist verfügbar.</span>
+          <button className="btn btn-primary" onClick={update}>Neu laden</button>
+          <button className="btn" onClick={() => setUpdate(null)}>Später</button>
+        </div>
+      )}
     </div>
   );
 }

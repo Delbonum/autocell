@@ -1304,3 +1304,19 @@ textarea.input {
     overflow: visible;
   }
 }
+
+.update-banner {
+  position: absolute;
+  right: 16px;
+  bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 16px;
+  border-radius: 8px;
+  background: var(--menu-hover);
+  border: 1px solid #3c7a4a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 91;
+  max-width: calc(100% - 32px);
+}

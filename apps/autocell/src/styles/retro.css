@@ -501,7 +501,8 @@
   border-radius: 50%;
 }
 
-.app[data-theme='retro'] .toast {
+.app[data-theme='retro'] .toast,
+.app[data-theme='retro'] .update-banner {
   background: #ffffe1;
   border: 1.5px solid #000;
   border-radius: 0;
