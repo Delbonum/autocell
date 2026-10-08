@@ -9,7 +9,7 @@ AutoCell 2 ist eine vollständige Neuentwicklung (Version 1 wird nicht
 weitergeführt) und entsteht als Desktop-Anwendung und als Web-Anwendung, die
 sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 
-## Funktionen (Stand 2.3.0, in Entwicklung)
+## Funktionen (Stand 2.4.0, in Entwicklung)
 
 - Mehrere Projekte gleichzeitig in Tabs, Vorlagen für den schnellen Start
 - Beliebig viele **Zustände** mit Name, Farbe und Startanteil
@@ -69,6 +69,29 @@ Dateipfade (Rust-Befehle in `src-tauri/src/lib.rs`, Anbindung in
 `src/app/desktopFiles.ts`), öffnet `.acp`-Dateien per Doppelklick und führt
 eine Liste „Zuletzt geöffnet“. Die Web-Version bleibt davon unberührt.
 
+Lokal baut `desktop:build` den Windows-Installer. Auf macOS und Linux die
+gewünschten Pakete angeben, z. B. `npm run desktop:build -- --bundles dmg` bzw.
+`npm run desktop:build -- --bundles deb,appimage` (Linux braucht zusätzlich
+`libwebkit2gtk-4.1-dev`, `librsvg2-dev` und `patchelf`).
+
+### Pakete für Windows, macOS und Linux
+
+Der Workflow `.github/workflows/desktop.yml` baut alle Pakete auf GitHub:
+
+- **Von Hand** (Actions › Desktop-Pakete › Run workflow): Die Pakete hängen als
+  Artefakte am Workflow-Lauf.
+- **Release:** Version anheben, committen, dann
+
+  ```bash
+  git tag v2.4.0 && git push origin v2.4.0
+  ```
+
+  Der Workflow prüft, dass Tag und Version übereinstimmen, und legt einen
+  Release-Entwurf mit allen Paketen an. Veröffentlicht wird er auf GitHub von Hand.
+
+Die macOS-App ist nur ad hoc signiert, nicht von Apple beglaubigt: Beim ersten
+Start muss man sie im Finder per Rechtsklick › Öffnen starten.
+
 ### Web-Version
 
 Die Oberfläche läuft ohne Änderungen im Browser. Jeder Push auf `main` baut sie
@@ -117,4 +140,6 @@ npm run version:sync                     # in alle Pakete übertragen
 
 ## Nächste Schritte
 
-- Installationspakete für macOS und Linux
+- macOS-App von Apple beglaubigen lassen (Notarisierung, erfordert ein
+  Apple-Entwicklerkonto)
+- Automatische Updates der Desktop-App

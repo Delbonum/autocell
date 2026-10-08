@@ -6,6 +6,19 @@ Alle nennenswerten Änderungen an AutoCell. Die Versionsnummern folgen
 Die Version 2.0.0 ist eine vollständige Neuentwicklung. Sie ersetzt die frühere
 Version 1 und ist zu deren Dateien nicht kompatibel.
 
+## [2.4.0] – 2026-10-08
+
+### Neu
+- Installationspakete für macOS (`.dmg`, Intel und Apple Silicon) und Linux
+  (`.deb`, `.rpm`, `.AppImage`) neben dem Windows-Installer. GitHub Actions
+  baut alle auf den jeweiligen Systemen (`.github/workflows/desktop.yml`); ein
+  Tag `vX.Y.Z` erzeugt einen Release-Entwurf mit allen Paketen.
+- macOS: Doppelklick auf eine `.acp`-Datei öffnet sie in AutoCell.
+
+### Geändert
+- Dateien, die per Doppelklick ankommen, während AutoCell noch startet, gehen
+  nicht mehr verloren.
+
 ## [2.3.0] – 2026-10-08
 
 ### Neu

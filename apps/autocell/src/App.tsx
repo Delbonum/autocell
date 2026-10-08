@@ -293,10 +293,14 @@ export function App() {
     let cancelled = false;
     void (async () => {
       const desktop = await import('./app/desktopFiles');
-      for (const p of await desktop.takeInitialFiles()) await openPathRef.current(p);
+      // Erst zuhören, dann abholen: Ab dem Abholen schickt die Desktop-Hülle neue Dateien als Ereignis.
       const off = await desktop.onOpenFiles((paths) => paths.forEach((p) => void openPathRef.current(p)));
-      if (cancelled) off();
-      else unlisten = off;
+      if (cancelled) {
+        off();
+        return;
+      }
+      unlisten = off;
+      for (const p of await desktop.takeInitialFiles()) await openPathRef.current(p);
     })();
     return () => {
       cancelled = true;

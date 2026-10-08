@@ -6,13 +6,38 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use tauri::ipc::{InvokeBody, Request, Response};
-use tauri::{Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Dateiendungen, die AutoCell lesen und schreiben darf.
 const ALLOWED_EXTENSIONS: &[&str] = &["acp", "json", "csv", "rle", "txt", "png"];
 
-/// Dateien, die beim Start übergeben wurden (Doppelklick auf eine .acp-Datei).
-struct InitialFiles(Mutex<Vec<String>>);
+/// Dateien, die AutoCell öffnen soll (Doppelklick auf eine .acp-Datei). Bis die
+/// Oberfläche bereit ist, werden sie gesammelt; danach gehen sie als Ereignis
+/// `open-files` direkt an die Oberfläche.
+struct OpenQueue(Mutex<PendingFiles>);
+
+struct PendingFiles {
+    ready: bool,
+    files: Vec<String>,
+}
+
+fn deliver(app: &AppHandle, files: Vec<String>) {
+    if files.is_empty() {
+        return;
+    }
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+    let queue = app.state::<OpenQueue>();
+    let mut pending = queue.0.lock().unwrap();
+    if pending.ready {
+        drop(pending);
+        let _ = app.emit("open-files", files);
+    } else {
+        pending.files.extend(files);
+    }
+}
 
 fn check_extension(path: &Path) -> Result<(), String> {
     let ext = path
@@ -86,10 +111,13 @@ fn write_file(request: Request<'_>) -> Result<(), String> {
     })
 }
 
-/// Übergebene Dateien einmalig abholen.
+/// Gesammelte Dateien abholen. Die Oberfläche ruft das auf, sobald sie auf
+/// `open-files` hört; alle späteren Dateien kommen dann als Ereignis.
 #[tauri::command]
-fn take_initial_files(state: State<'_, InitialFiles>) -> Vec<String> {
-    std::mem::take(&mut *state.0.lock().unwrap())
+fn take_initial_files(state: State<'_, OpenQueue>) -> Vec<String> {
+    let mut pending = state.0.lock().unwrap();
+    pending.ready = true;
+    std::mem::take(&mut pending.files)
 }
 
 /// Wandelt Kommandozeilenargumente in vorhandene Dateipfade um.
@@ -113,24 +141,33 @@ pub fn run() {
     let mut builder = tauri::Builder::default();
     #[cfg(desktop)]
     {
-        // Läuft AutoCell schon, öffnet ein Doppelklick die Datei im vorhandenen Fenster.
+        // Läuft AutoCell schon, öffnet ein Doppelklick die Datei im vorhandenen Fenster
+        // (Windows und Linux übergeben die Datei als Argument eines neuen Prozesses).
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
-            let files = file_args(args.into_iter().skip(1), Path::new(&cwd));
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.unminimize();
-                let _ = window.set_focus();
-            }
-            if !files.is_empty() {
-                let _ = app.emit("open-files", files);
-            }
+            deliver(app, file_args(args.into_iter().skip(1), Path::new(&cwd)));
         }));
     }
-    builder
+    let app = builder
         .plugin(tauri_plugin_dialog::init())
-        .manage(InitialFiles(Mutex::new(initial)))
+        .manage(OpenQueue(Mutex::new(PendingFiles { ready: false, files: initial })))
         .invoke_handler(tauri::generate_handler![read_file, write_file, take_initial_files])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("AutoCell konnte nicht gestartet werden");
+
+    app.run(|_handle, _event| {
+        // macOS übergibt per Doppelklick geöffnete Dateien nicht als Argument,
+        // sondern als Ereignis – beim Start wie im laufenden Betrieb.
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Opened { urls } = _event {
+            let files = urls
+                .into_iter()
+                .filter_map(|u| u.to_file_path().ok())
+                .filter(|p| p.is_file())
+                .map(|p| p.to_string_lossy().into_owned())
+                .collect();
+            deliver(_handle, files);
+        }
+    });
 }
 
 #[cfg(test)]
