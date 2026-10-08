@@ -29,12 +29,13 @@ import {
 } from './app/doc';
 import { baseName, interpretFile, projectFromGrid } from './app/fileActions';
 import { registerOffline } from './app/offline';
+import { addRecent, baseNameOfPath, dirOfPath, loadRecent, removeRecent, samePath, storeRecent } from './app/paths';
 import {
   closeDesktopWindow,
-  downloadBlob,
   isDesktop,
   minimizeDesktopWindow,
   openFile,
+  type OpenedFile,
   saveFile,
   setNativeTitleBar,
   toggleFullscreen,
@@ -83,6 +84,11 @@ interface CtxState {
 const ZOOM_STEPS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40];
 const ACP_TYPES = [{ description: 'AutoCell-Projekt', accept: { 'application/vnd.autocell.project+zip': ['.acp'] } }];
 
+/** Fehlertext für Meldungen; Tauri liefert Fehler als reinen Text. */
+function errorText(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
 function loadTheme(): Theme {
   try {
     return localStorage.getItem('autocell.theme') === 'retro' ? 'retro' : 'modern';
@@ -113,6 +119,10 @@ export function App() {
   const doc = docs.find((d) => d.id === activeId) ?? null;
   const docRef = useRef(doc);
   docRef.current = doc;
+  const docsRef = useRef(docs);
+  docsRef.current = docs;
+  /** Desktop: zuletzt geöffnete oder gespeicherte Projektdateien (Pfade). */
+  const [recent, setRecent] = useState<string[]>(() => (isDesktop() ? loadRecent() : []));
 
   const showToast = useCallback((text: string) => {
     window.clearTimeout(toastTimer.current);
@@ -187,6 +197,24 @@ export function App() {
 
   /* ---------------- Dateien ---------------- */
 
+  /** Desktop: Pfad in „Zuletzt geöffnet“ übernehmen. */
+  const rememberFile = useCallback((handle: unknown) => {
+    if (typeof handle !== 'string') return;
+    setRecent((list) => {
+      const next = addRecent(list, handle);
+      storeRecent(next);
+      return next;
+    });
+  }, []);
+
+  const forgetFile = useCallback((path: string) => {
+    setRecent((list) => {
+      const next = removeRecent(list, path);
+      storeRecent(next);
+      return next;
+    });
+  }, []);
+
   const save = async (d: Doc, saveAs = false): Promise<boolean> => {
     try {
       const bytes = encodeAcp(docToProject(d), { appVersion: APP_VERSION });
@@ -195,24 +223,18 @@ export function App() {
       d.fileName = res.name;
       d.fileHandle = res.handle;
       d.dirty = false;
+      rememberFile(res.handle);
       refresh();
       showToast(`${res.name} gespeichert`);
       return true;
     } catch (e) {
-      setDialog({ type: 'message', title: 'Speichern fehlgeschlagen', text: (e as Error).message });
+      setDialog({ type: 'message', title: 'Speichern fehlgeschlagen', text: errorText(e) });
       return false;
     }
   };
 
-  const open = async () => {
-    let f;
-    try {
-      f = await openFile();
-    } catch (e) {
-      setDialog({ type: 'message', title: 'Öffnen fehlgeschlagen', text: (e as Error).message });
-      return;
-    }
-    if (!f) return;
+  /** Verarbeitet eine geöffnete Datei: Projekt, importiertes Raster oder Easter Egg. */
+  const openOpened = (f: OpenedFile) => {
     const res = interpretFile(f.name, f.bytes);
     if (res.kind === 'easteregg') {
       setRunning(false);
@@ -226,6 +248,7 @@ export function App() {
     if (res.kind === 'project') {
       const isAcp = /\.acp$/i.test(f.name);
       addDoc(createDoc(res.project, isAcp ? f.name : null, isAcp ? f.handle : null));
+      if (isAcp) rememberFile(f.handle);
       return;
     }
     const d = createDoc(projectFromGrid(res.grid, baseName(f.name)));
@@ -234,35 +257,97 @@ export function App() {
     showToast(`${res.format}-Raster mit ${res.grid.width} × ${res.grid.height} Zellen importiert`);
   };
 
+  const open = async () => {
+    let f;
+    try {
+      f = await openFile();
+    } catch (e) {
+      setDialog({ type: 'message', title: 'Öffnen fehlgeschlagen', text: errorText(e) });
+      return;
+    }
+    if (f) openOpened(f);
+  };
+
+  /** Desktop: Datei über ihren Pfad öffnen (Zuletzt geöffnet, Doppelklick im Explorer). */
+  const openPath = async (path: string) => {
+    const already = docsRef.current.find((d) => typeof d.fileHandle === 'string' && samePath(d.fileHandle, path));
+    if (already) {
+      selectDoc(already.id);
+      return;
+    }
+    try {
+      const { readPath } = await import('./app/desktopFiles');
+      openOpened(await readPath(path));
+    } catch (e) {
+      forgetFile(path);
+      setDialog({ type: 'message', title: 'Öffnen fehlgeschlagen', text: errorText(e) });
+    }
+  };
+  const openPathRef = useRef(openPath);
+  openPathRef.current = openPath;
+
+  // Desktop: Dateien vom Start (Doppelklick auf .acp) und aus weiteren Doppelklicks öffnen.
+  useEffect(() => {
+    if (!isDesktop()) return;
+    let unlisten: (() => void) | null = null;
+    let cancelled = false;
+    void (async () => {
+      const desktop = await import('./app/desktopFiles');
+      for (const p of await desktop.takeInitialFiles()) await openPathRef.current(p);
+      const off = await desktop.onOpenFiles((paths) => paths.forEach((p) => void openPathRef.current(p)));
+      if (cancelled) off();
+      else unlisten = off;
+    })();
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, []);
+
+  /** Speichert einen Export; Fehler erscheinen als Meldung. */
+  const exportFile = async (name: string, data: Uint8Array | string, mime: string): Promise<boolean> => {
+    try {
+      return (await saveFile(name, data, mime)) !== null;
+    } catch (e) {
+      setDialog({ type: 'message', title: 'Export nicht möglich', text: errorText(e) });
+      return false;
+    }
+  };
+
   const exportGrid = async (format: 'csv' | 'rle') => {
     if (!doc) return;
     const g = { width: doc.sim.width, height: doc.sim.height, cells: Array.from(doc.sim.cells) };
+    let text: string;
     try {
-      const text = format === 'csv' ? toCSV(g) : toRLE(g);
-      await saveFile(`${doc.project.meta.name}.${format}`, text, 'text/plain');
+      text = format === 'csv' ? toCSV(g) : toRLE(g);
     } catch (e) {
-      setDialog({ type: 'message', title: 'Export nicht möglich', text: (e as Error).message });
+      setDialog({ type: 'message', title: 'Export nicht möglich', text: errorText(e) });
+      return;
     }
+    await exportFile(`${doc.project.meta.name}.${format}`, text, 'text/plain');
   };
 
   const exportHistory = async () => {
     if (!doc) return;
     const csv = doc.history.toCSV(doc.sim.model.states.map((s) => s.name));
-    await saveFile(`${doc.project.meta.name} – Statistik.csv`, csv, 'text/csv');
+    await exportFile(`${doc.project.meta.name} – Statistik.csv`, csv, 'text/csv');
   };
 
   const exportProbes = async () => {
     if (!doc) return;
     const csv = doc.probeLog.toCSV(doc.probes, doc.sim.model.states.map((s) => s.name));
-    await saveFile(`${doc.project.meta.name} – Messpunkte.csv`, csv, 'text/csv');
+    await exportFile(`${doc.project.meta.name} – Messpunkte.csv`, csv, 'text/csv');
   };
 
   const snapshot = async () => {
     if (!doc) return;
+    const generation = doc.sim.generation;
     const blob = await renderPng(doc.sim, doc.sim.model.states.map((s) => s.color), Math.max(4, doc.project.view.cellSize));
     if (!blob) return;
-    downloadBlob(blob, `${doc.project.meta.name} – Generation ${doc.sim.generation}.png`);
-    showToast(`Schnappschuss gespeichert · Generation ${doc.sim.generation}`);
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    if (await exportFile(`${doc.project.meta.name} – Generation ${generation}.png`, bytes, 'image/png')) {
+      showToast(`Schnappschuss gespeichert · Generation ${generation}`);
+    }
   };
 
   /* ---------------- Simulation ---------------- */
@@ -545,6 +630,7 @@ export function App() {
         items: [
           { label: 'Neues Projekt …', shortcut: 'Strg+N', action: () => setDialog({ type: 'new' }) },
           { label: 'Öffnen / Importieren …', shortcut: 'Strg+O', action: () => void open() },
+          ...recent.map((p, i) => ({ label: `${i + 1}  ${baseNameOfPath(p)}`, hint: dirOfPath(p), action: () => void openPath(p) })),
           { label: 'Speichern', shortcut: 'Strg+S', action: () => doc && void save(doc), disabled: !hasDoc },
           { label: 'Speichern unter …', shortcut: 'Strg+Umsch+S', action: () => doc && void save(doc, true), disabled: !hasDoc },
           { separator: true },
@@ -836,6 +922,8 @@ export function App() {
             <StartScreen
               onNew={() => setDialog({ type: 'new' })}
               onOpen={() => void open()}
+              recent={recent}
+              onOpenRecent={(p) => void openPath(p)}
               onTemplate={(id) => addDoc(docFromTemplate(id))}
             />
           )}

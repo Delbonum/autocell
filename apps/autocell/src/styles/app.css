@@ -1348,3 +1348,58 @@ textarea.input {
 .probe-table td:first-child {
   padding-left: 0;
 }
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.recent .section-title {
+  margin-bottom: 6px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.recent-item:hover {
+  background: var(--menu-hover);
+}
+
+.recent-item svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.recent-item span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.recent-item strong,
+.recent-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-item strong {
+  font-weight: 500;
+}
+
+.recent-item small {
+  color: var(--muted);
+  font-size: 11px;
+}

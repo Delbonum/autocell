@@ -6,6 +6,8 @@ export interface MenuItem {
   action?: () => void;
   disabled?: boolean;
   checked?: boolean;
+  /** Zusatzinfo als Tooltip, z. B. der Ordner einer Datei. */
+  hint?: string;
   separator?: false;
 }
 
@@ -51,6 +53,7 @@ export function MenuBar({ menus, open, onOpen }: Props) {
                         role={it.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
                         aria-checked={it.checked}
                         disabled={it.disabled}
+                        title={it.hint}
                         onClick={() => {
                           onOpen(null);
                           it.action?.();

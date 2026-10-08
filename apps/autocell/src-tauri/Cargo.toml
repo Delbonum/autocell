@@ -1,6 +1,6 @@
 [package]
 name = "autocell"
-version = "2.2.0"
+version = "2.3.0"
 description = "AutoCell – Simulation zellulärer Automaten (Desktop-Hülle)"
 edition = "2021"
 publish = false
@@ -14,6 +14,10 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2"
 
 [profile.release]
 codegen-units = 1

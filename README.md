@@ -9,7 +9,7 @@ AutoCell 2 ist eine vollständige Neuentwicklung (Version 1 wird nicht
 weitergeführt) und entsteht als Desktop-Anwendung und als Web-Anwendung, die
 sich in beliebige Webseiten einbinden lässt. Beide nutzen denselben Rechenkern.
 
-## Funktionen (Stand 2.2.0, in Entwicklung)
+## Funktionen (Stand 2.3.0, in Entwicklung)
 
 - Mehrere Projekte gleichzeitig in Tabs, Vorlagen für den schnellen Start
 - Beliebig viele **Zustände** mit Name, Farbe und Startanteil
@@ -64,6 +64,11 @@ npm run desktop:dev    # Desktop-Fenster mit Live-Neuladen
 npm run desktop:build  # autocell.exe und Installer unter apps/autocell/src-tauri/target/release
 ```
 
+Die Desktop-App nutzt die Dateidialoge des Betriebssystems und echte
+Dateipfade (Rust-Befehle in `src-tauri/src/lib.rs`, Anbindung in
+`src/app/desktopFiles.ts`), öffnet `.acp`-Dateien per Doppelklick und führt
+eine Liste „Zuletzt geöffnet“. Die Web-Version bleibt davon unberührt.
+
 ### Web-Version
 
 Die Oberfläche läuft ohne Änderungen im Browser. Jeder Push auf `main` baut sie
@@ -112,4 +117,4 @@ npm run version:sync                     # in alle Pakete übertragen
 
 ## Nächste Schritte
 
-- Desktop-Hülle ausbauen: native Datei-Dialoge, Installationspakete für macOS und Linux
+- Installationspakete für macOS und Linux

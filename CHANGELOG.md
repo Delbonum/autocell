@@ -6,6 +6,22 @@ Alle nennenswerten Änderungen an AutoCell. Die Versionsnummern folgen
 Die Version 2.0.0 ist eine vollständige Neuentwicklung. Sie ersetzt die frühere
 Version 1 und ist zu deren Dateien nicht kompatibel.
 
+## [2.3.0] – 2026-10-08
+
+### Neu
+- Desktop: Öffnen, Speichern und alle Exporte (CSV, RLE, PNG) über die
+  Dialoge von Windows mit echten Dateipfaden. „Speichern“ schreibt ohne
+  Rückfrage in die geöffnete Datei, auch nach einem Neustart; geschrieben wird
+  über eine temporäre Datei, damit ein Abbruch die alte Datei nicht beschädigt.
+  Der Dialog merkt sich den zuletzt benutzten Ordner.
+- Desktop: Doppelklick auf eine `.acp`-Datei im Explorer öffnet sie in
+  AutoCell – läuft AutoCell schon, im vorhandenen Fenster.
+- Desktop: „Zuletzt geöffnet“ im Datei-Menü und auf dem Startbildschirm.
+
+### Geändert
+- PNG-Schnappschüsse werden auch im Browser über einen Speichern-Dialog
+  abgelegt (wo der Browser ihn anbietet) statt sofort heruntergeladen.
+
 ## [2.2.0] – 2026-10-08
 
 ### Neu

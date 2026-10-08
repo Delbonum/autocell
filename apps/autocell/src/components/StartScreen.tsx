@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Rng, Simulation, TEMPLATES, type Template, type TemplateId } from '@autocell/core';
+import { baseNameOfPath, dirOfPath } from '../app/paths';
 import { APP_VERSION } from '../version';
 import { ICON_URL } from './Chrome';
 import { Icon } from './Icons';
@@ -37,7 +38,16 @@ function Preview({ t }: { t: Template }) {
   return <canvas ref={ref} style={{ aspectRatio: '56 / 30' }} aria-hidden="true" />;
 }
 
-export function StartScreen({ onNew, onOpen, onTemplate }: { onNew: () => void; onOpen: () => void; onTemplate: (id: TemplateId) => void }) {
+interface StartScreenProps {
+  onNew: () => void;
+  onOpen: () => void;
+  onTemplate: (id: TemplateId) => void;
+  /** Desktop: zuletzt geöffnete Projektdateien (Pfade). */
+  recent?: readonly string[];
+  onOpenRecent?: (path: string) => void;
+}
+
+export function StartScreen({ onNew, onOpen, onTemplate, recent = [], onOpenRecent }: StartScreenProps) {
   return (
     <div className="start">
       <aside className="start-side">
@@ -61,6 +71,20 @@ export function StartScreen({ onNew, onOpen, onTemplate }: { onNew: () => void; 
           </button>
           <p className="hint" style={{ marginTop: 4 }}>Öffnet .acp-Projekte sowie Raster als CSV oder RLE (Golly).</p>
         </div>
+        {recent.length > 0 && onOpenRecent && (
+          <nav className="recent" aria-label="Zuletzt geöffnet">
+            <h2 className="section-title">Zuletzt geöffnet</h2>
+            {recent.map((p) => (
+              <button key={p} className="recent-item" title={p} onClick={() => onOpenRecent(p)}>
+                <Icon.folder size={15} />
+                <span>
+                  <strong>{baseNameOfPath(p)}</strong>
+                  <small>{dirOfPath(p)}</small>
+                </span>
+              </button>
+            ))}
+          </nav>
+        )}
         <div style={{ marginTop: 'auto', color: 'var(--muted)', fontSize: 12 }}>Version {APP_VERSION}</div>
       </aside>
       <main className="start-main">

@@ -1,8 +1,11 @@
 /**
  * Zugriff auf Dateien. Im Browser über die File System Access API (Chrome,
  * Edge) bzw. Datei-Upload und Download als Rückfallebene. In der Desktop-App
- * wird diese Schicht später durch die nativen Dialoge von Tauri ersetzt.
+ * über die Dialoge von Windows und echte Dateipfade (siehe desktopFiles.ts);
+ * dort ist das Handle der Dateipfad als Text.
  */
+
+import { baseNameOfPath } from './paths';
 
 export interface OpenedFile {
   name: string;
@@ -44,6 +47,7 @@ function isAbort(e: unknown): boolean {
 
 /** Öffnet einen Dateiauswahldialog. `null`, wenn abgebrochen wurde. */
 export async function openFile(accept = '.acp,.csv,.rle,.txt,.json'): Promise<OpenedFile | null> {
+  if (isDesktop()) return (await import('./desktopFiles')).openDialog(OPEN_TYPES);
   const picker = w().showOpenFilePicker;
   if (picker) {
     try {
@@ -80,6 +84,12 @@ export async function saveFile(
   handle: unknown = null,
   types?: FilePickerType[],
 ): Promise<SavedFile | null> {
+  if (isDesktop()) {
+    const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+    const desktop = await import('./desktopFiles');
+    const path = await desktop.saveDialog(suggestedName, bytes, typeof handle === 'string' ? handle : null, types ?? typesFor(suggestedName, mime));
+    return path ? { name: baseNameOfPath(path), handle: path } : null;
+  }
   const blob = new Blob([data as BlobPart], { type: mime });
   const picker = w().showSaveFilePicker;
   let h = handle as FsHandle | null;
@@ -99,6 +109,14 @@ export async function saveFile(
   }
   downloadBlob(blob, suggestedName);
   return { name: suggestedName, handle: null };
+}
+
+/** Dateityp für den Speichern-Dialog aus der Endung des Vorschlags. */
+function typesFor(name: string, mime: string): FilePickerType[] {
+  const ext = /\.([^.]+)$/.exec(name)?.[1]?.toLowerCase();
+  if (!ext) return [];
+  const labels: Record<string, string> = { csv: 'CSV-Tabelle', rle: 'RLE-Muster', png: 'PNG-Bild', txt: 'Text', json: 'JSON', acp: 'AutoCell-Projekt' };
+  return [{ description: labels[ext] ?? ext.toUpperCase(), accept: { [mime || 'application/octet-stream']: [`.${ext}`] } }];
 }
 
 export function downloadBlob(blob: Blob, name: string): void {
